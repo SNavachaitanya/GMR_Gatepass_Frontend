@@ -14,7 +14,7 @@ const Login = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3300/login', {
+      const response = await fetch('http://82.29.162.24:3300/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
