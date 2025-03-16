@@ -17,7 +17,7 @@ const PrivateRoute = ({ children, setUsername }) => {
       }
 
       try {
-        const response = await fetch('http://localhost:3300/verify-token', {
+        const response = await fetch('http://82.29.162.24:3300/verify-token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
