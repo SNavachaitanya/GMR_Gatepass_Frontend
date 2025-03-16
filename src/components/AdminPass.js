@@ -35,7 +35,7 @@ const AdminPass = () => {
         setLoading(true);
 
         console.log(`Verifying Roll No: ${rollNo}`);
-        const response = await fetch(`http://localhost:3300/verify-roll/${rollNo}`);
+        const response = await fetch(`http://82.29.162.24:3300/verify-roll/${rollNo}`);
 
         if (response.ok) {
             const data = await response.json();
@@ -107,7 +107,7 @@ const AdminPass = () => {
     }
 
     // Send properly formatted data to the server
-    const response = await fetch('http://localhost:3300/update-gatepass-issue', {
+    const response = await fetch('http://82.29.162.24:3300/update-gatepass-issue', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -144,7 +144,7 @@ const AdminPass = () => {
         return;
       }
     try {
-        const response = await axios.post('http://localhost:3300/run-jar-verify');
+        const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
         setLoading(true)
         const data = response.data;
 

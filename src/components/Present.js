@@ -36,7 +36,7 @@ const Present = () => {
  useEffect(() => {
     const fetchData = async () => {
         try {
-            const response = await axios.get('http://localhost:3300/present-students');
+            const response = await axios.get('http://82.29.162.24:3300/present-students');
             setStudents(response.data);
         } catch (error) {
             console.error('Error fetching gatepass data:', error);
@@ -50,7 +50,7 @@ const Present = () => {
  const fetchStudentsById = async (searchId) => {
     if (searchId) {
         try {
-            const response = await axios.get('http://localhost:3300/present-student-filtered-by-id', {
+            const response = await axios.get('http://82.29.162.24:3300/present-student-filtered-by-id', {
                 params: { id: searchId || ''}
             });
             setStudents(response.data);
@@ -63,7 +63,7 @@ const Present = () => {
 };
 const fetchDataAll = async () => {
     try {
-        const response = await axios.get('http://localhost:3300/present-students');
+        const response = await axios.get('http://82.29.162.24:3300/present-students');
         setStudents(response.data);
     } catch (error) {
         console.error('Error fetching gatepass data:', error);
@@ -86,7 +86,7 @@ const handleInputChange = (e) => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:3300/present-student-filtered', {
+            const response = await axios.get('http://82.29.162.24:3300/present-student-filtered', {
                 params: { gender, blockName} 
             });
             setStudents(response.data);

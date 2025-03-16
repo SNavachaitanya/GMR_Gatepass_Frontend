@@ -32,7 +32,7 @@ function Reports() {
     const fetchData = async (from, to) => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:3300/current-gatepass-report-filtered', {
+            const response = await axios.get('http://82.29.162.24:3300/current-gatepass-report-filtered', {
                 params: { from, to, type: filterType } 
             });
             setGatepassData(response.data);
@@ -47,7 +47,7 @@ function Reports() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:3300/current-gatepass-report');
+                const response = await axios.get('http://82.29.162.24:3300/current-gatepass-report');
                 setGatepassData(response.data);
             } catch (error) {
                 console.error('Error fetching gatepass data:', error);
@@ -63,7 +63,7 @@ function Reports() {
         // console.log('📥 Download request for:', filterType); // Debugging
     
         try {
-            const response = await axios.get('http://localhost:3300/download-current-gatepass-report', {
+            const response = await axios.get('http://82.29.162.24:3300/download-current-gatepass-report', {
                 params: { filterType },  // Send filterType as a query parameter
                 responseType: 'blob'
             });
@@ -85,7 +85,7 @@ function Reports() {
 
     const handleSaveTime = async () => {
         try {
-            await axios.post('http://localhost:3300/save-report-time', { time: reportTime });
+            await axios.post('http://82.29.162.24:3300/save-report-time', { time: reportTime });
             alert('Report time saved successfully!');
         } catch (error) {
             console.error('Error saving report time:', error);
@@ -103,7 +103,7 @@ function Reports() {
             };
     
             // Make the POST request to send the report
-            await axios.post('http://localhost:3300/send-report', reportData);
+            await axios.post('http://82.29.162.24:3300/send-report', reportData);
             alert('Report sent successfully!');
         } catch (error) {
             console.error('Error sending report:', error);

@@ -60,7 +60,7 @@ const UpdateProfile = () => {
     useEffect(() => {
     const handleVerifyRollNo = async () => {
         try {
-          const response = await axios.get(`http://localhost:3300/verify-rollupdate/${rollNo}`);
+          const response = await axios.get(`http://82.29.162.24:3300/verify-rollupdate/${rollNo}`);
           if (response.data.length > 0) {
             const user = response.data[0];
             setUserData(user);
@@ -92,7 +92,7 @@ const UpdateProfile = () => {
         }
     
         try {
-          const response = await axios.put(`http://localhost:3300/update-user`, formData);
+          const response = await axios.put(`http://82.29.162.24:3300/update-user`, formData);
           alert(response.data.message);
           setUserData(null); // Clear user data after updating
           setFormData({ // Reset form data

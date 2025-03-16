@@ -10,7 +10,7 @@ const Checkinout = () => {
 
   const sendSMS = async ( message) => {
     try {
-        const response = await axios.post('http://localhost:3300/send-sms-in', {
+        const response = await axios.post('http://82.29.162.24:3300/send-sms-in', {
            
             message: message
         });
@@ -30,7 +30,7 @@ const Checkinout = () => {
     setError('');
     setMessage('');
     try {
-      const response = await fetch('http://localhost:3300/run-jar-verify-checkin-out', {
+      const response = await fetch('http://82.29.162.24:3300/run-jar-verify-checkin-out', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -77,7 +77,7 @@ const Checkinout = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3300/checkin-out/${rollNo}`, {
+      const response = await fetch(`http://82.29.162.24:3300/checkin-out/${rollNo}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
       });

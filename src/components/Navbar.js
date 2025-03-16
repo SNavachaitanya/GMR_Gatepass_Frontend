@@ -16,7 +16,7 @@ const Navbar = ({ username }) => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:3300/logout', {
+      const response = await fetch('http://82.29.162.24:3300/logout', {
         method: 'POST',
         credentials: 'include', // Include credentials (cookies)
       });

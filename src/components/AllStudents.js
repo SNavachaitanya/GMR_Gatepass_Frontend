@@ -33,7 +33,7 @@ const AllStudents = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:3300/getAllStudents');
+            const response = await axios.get('http://82.29.162.24:3300/getAllStudents');
             setStudents(response.data);
         } catch (error) {
             console.error('Error fetching gatepass data:', error);
@@ -47,7 +47,7 @@ const AllStudents = () => {
  const fetchStudentsById = async (searchId) => {
     if (searchId) {
         try {
-            const response = await axios.get('http://localhost:3300/students-filtered-by-id', {
+            const response = await axios.get('http://82.29.162.24:3300/students-filtered-by-id', {
                 params: { id: searchId || ''}
             });
             setStudents(response.data);
@@ -60,7 +60,7 @@ const AllStudents = () => {
 };
 const fetchDataAll = async () => {
     try {
-        const response = await axios.get('http://localhost:3300/getAllStudents');
+        const response = await axios.get('http://82.29.162.24:3300/getAllStudents');
         setStudents(response.data);
     } catch (error) {
         console.error('Error fetching gatepass data:', error);
@@ -85,7 +85,7 @@ const handleInputChange = (e) => {
         console.log("📡 Sending API Request with filters:", { gender, blockName }); // Log Request Data
         try {
             console.log("🔵 Sending Filters to Backend:", { gender, blockName });
-            const response = await axios.get('http://localhost:3300/students-filtered', {
+            const response = await axios.get('http://82.29.162.24:3300/students-filtered', {
                 params: { gender, blockName} 
             });
             console.log("🟢 Response from Backend:", response.data);

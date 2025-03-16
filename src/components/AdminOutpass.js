@@ -23,7 +23,7 @@ const AdminOutpass = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3300/verify-roll-outpass/${rollNo}`);
+      const response = await fetch(`http://82.29.162.24:3300/verify-roll-outpass/${rollNo}`);
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
@@ -48,7 +48,7 @@ const AdminOutpass = () => {
   // Function to update gate pass with current date and time
   const updateGatepass = async (rollNo,parentno) => {
     try {
-      const response = await fetch(`http://localhost:3300/update-outpass-admin`, {
+      const response = await fetch(`http://82.29.162.24:3300/update-outpass-admin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +152,7 @@ const AdminOutpass = () => {
 
 //   const sendSMS = async ( message) => {
 //     try {
-//         const response = await axios.post('http://localhost:3300/send-sms-out', {
+//         const response = await axios.post('http://82.29.162.24:3300/send-sms-out', {
            
 //             message: message
 //         });
@@ -173,7 +173,7 @@ const AdminOutpass = () => {
   const handleVerifyFingerprint = async () => {
     setUserData(null);
     try {
-        const response = await axios.post('http://localhost:3300/run-jar-verify');
+        const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
         const data = response.data;
 
         // Assuming data is the student object now

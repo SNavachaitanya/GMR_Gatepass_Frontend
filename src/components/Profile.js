@@ -29,7 +29,7 @@ const Profile = () => {
     const fetchStudentDetails = async () => {
       setLoading(true);
         try {
-            const response = await fetch(`http://localhost:3300/get-student-details-profile/${rollNo}`);
+            const response = await fetch(`http://82.29.162.24:3300/get-student-details-profile/${rollNo}`);
             if (!response.ok) {
                 throw new Error('User Not Found');
             }
@@ -64,7 +64,7 @@ const Profile = () => {
   const fetchData = async (from, to) => {
     setLoading(true);
     try {
-        const response = await axios.get(`http://localhost:3300/current-passes-filtered/${rollNo}`, {
+        const response = await axios.get(`http://82.29.162.24:3300/current-passes-filtered/${rollNo}`, {
             params: { from, to, type: filterType } 
         });
        if (response.data && response.data.length > 0) {

@@ -16,7 +16,7 @@ function StudentDetails() {
         }
 
         try {
-            const response = await axios.get(`http://localhost:3300/verify-rollupdate/${rollNo}`);
+            const response = await axios.get(`http://82.29.162.24:3300/verify-rollupdate/${rollNo}`);
             if (response.data && response.data.length > 0) {
                 enqueueSnackbar('Student data loaded successfully.', { variant: 'success' });
                 // Navigate to Profile page if the student data is found

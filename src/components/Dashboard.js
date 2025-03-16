@@ -13,7 +13,7 @@ const Dashboard = () => {
       setLoading(true);
    
       try {
-        const response = await axios.get(`http://localhost:3300/dashboard-data`, {
+        const response = await axios.get(`http://82.29.162.24:3300/dashboard-data`, {
           params: { date: date || selectedDate },
         });
         setDashboardData(response.data);

@@ -24,7 +24,7 @@ const Pass = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3300/verify-roll/${rollNo}`);
+      const response = await fetch(`http://82.29.162.24:3300/verify-roll/${rollNo}`);
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
@@ -49,7 +49,7 @@ const Pass = () => {
   };
   const sendSMS = async ( message) => {
     try {
-        const response = await axios.post('http://localhost:3300/send-sms-pink', {
+        const response = await axios.post('http://82.29.162.24:3300/send-sms-pink', {
            
             message: message
         });
@@ -69,7 +69,7 @@ const Pass = () => {
   const updateGatepass = async (rollNo,parentno) => {
     setError(null);
     try {
-      const response = await fetch(`http://localhost:3300/update-gatepass`, {
+      const response = await fetch(`http://82.29.162.24:3300/update-gatepass`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ const Pass = () => {
     setUserData(null);
     setError(null)
     try {
-        const response = await axios.post('http://localhost:3300/run-jar-verify');
+        const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
         const data = response.data;
 
         // Assuming data is the student object now

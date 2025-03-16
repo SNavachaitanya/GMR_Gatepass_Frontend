@@ -71,7 +71,7 @@ const Registration = ({ type }) => {
       }
 
       try {
-          const response = await axios.post('http://localhost:3300/register', formData);
+          const response = await axios.post('http://82.29.162.24:3300/register', formData);
           enqueueSnackbar(response.data.message, { variant: 'success' });
 
           setFormData({
@@ -92,7 +92,7 @@ const Registration = ({ type }) => {
   };
 const handleAddFingerprint = async () => {
   try {
-      const response = await axios.post('http://localhost:3300/run-jar');
+      const response = await axios.post('http://82.29.162.24:3300/run-jar');
       const data = response.data;
 
       if (data.length > 0) {
@@ -111,7 +111,7 @@ const handleAddFingerprint = async () => {
 
 const handleVerifyRollNo = async () => {
   try {
-      const response = await axios.get(`http://localhost:3300/verify-rollupdate/${rollNo}`);
+      const response = await axios.get(`http://82.29.162.24:3300/verify-rollupdate/${rollNo}`);
       if (response.data.length > 0) {
           const user = response.data[0];
           setUserData(user);
@@ -136,7 +136,7 @@ const handleVerifyRollNo = async () => {
 
 const handleDeleteRollNo = async () => {
   try {
-      const response = await axios.get(`http://localhost:3300/delete-roll/${rollNo}`);
+      const response = await axios.get(`http://82.29.162.24:3300/delete-roll/${rollNo}`);
       
          enqueueSnackbar(response.data.message, { variant: 'success' });
          setUserData(null)
@@ -154,7 +154,7 @@ const handleUpdateUser = async (e) => {
   }
 
   try {
-      const response = await axios.put(`http://localhost:3300/update-user`, formData);
+      const response = await axios.put(`http://82.29.162.24:3300/update-user`, formData);
       enqueueSnackbar(response.data.message, { variant: 'success' });
       setUserData(null); // Clear user data after updating
       setFormData({ // Reset form data
@@ -174,7 +174,7 @@ const handleUpdateUser = async (e) => {
 };
 const handleUpdateFingerprint = async () => {
   try {
-      const response = await axios.post('http://localhost:3300/run-jar-update');
+      const response = await axios.post('http://82.29.162.24:3300/run-jar-update');
       const data = response.data;
 
       if (data.length > 0) {
@@ -196,7 +196,7 @@ const handleImageExcelSubmit = async (e) => {
   formData.append('imageExcelFile', selectedFile); // Ensure this matches the server's expected field name
 
   try {
-      const response = await axios.post('http://localhost:3300/upload-images-excel', formData, {
+      const response = await axios.post('http://82.29.162.24:3300/upload-images-excel', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
       });
       enqueueSnackbar(response.data.message, { variant: 'success' });
@@ -212,7 +212,7 @@ const handleAddUsers = async (e) => {
   formData.append('excelFile', selectedFile); // Ensure this matches the server's expected field name
 
   try {
-      const response = await axios.post('http://localhost:3300/upload-excel', formData, {
+      const response = await axios.post('http://82.29.162.24:3300/upload-excel', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
       });
       enqueueSnackbar(response.data.message, { variant: 'success' });
@@ -228,7 +228,7 @@ const handleUpdateUsers = async (e) => {
   formData.append('excelFile', selectedFile); // Ensure this matches the server's expected field name
 
   try {
-      const response = await axios.post('http://localhost:3300/upload-update-excel', formData, {
+      const response = await axios.post('http://82.29.162.24:3300/upload-update-excel', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
       });
       enqueueSnackbar(response.data.message, { variant: 'success' });
@@ -243,7 +243,7 @@ const handleDeleteUsers = async (e) => {
   formData.append('excelFile', selectedFile); // Ensure this matches the server's expected field name
 
   try {
-      const response = await axios.post('http://localhost:3300/upload-delete-excel', formData, {
+      const response = await axios.post('http://82.29.162.24:3300/upload-delete-excel', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
       });
       enqueueSnackbar(response.data.message, { variant: 'success' });
