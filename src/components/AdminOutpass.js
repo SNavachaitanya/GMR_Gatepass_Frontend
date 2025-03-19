@@ -190,203 +190,179 @@ const AdminOutpass = () => {
 };
 const generateOutpassPDF = () => {
   if (userData) {
-    
-    // updateGatepass(userData.studentId,userData.parentno);
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }); // Formats date as MM/DD/YYYY
+    });
     const formattedTime = currentDate.toLocaleTimeString();
-    // const expectedDateTime = new Date(expectedOutTime); // Formats time as HH:MM:SS AM/PM
-   
+
     const doc = new jsPDF({
       unit: 'mm',
       format: [80, 100],
-      margin: 0 // Remove margins
+      margin: 0,
     });
-
-
-
-// Add the image to the PDF at the specified position (x, y) and size (width, height)
-// doc.addImage(base64image, 'JPEG', 15, 1, 40, 10); // Adjust position and size as needed
-
-
-// Header Section
-doc.setFontSize(10);
-doc.setFont('helvetica', 'bold'); // Bold font for header
-doc.text('GMR INSTITUTE OF TECHNOLOGY', 1.5, 10); // Adjusted to start near the left
-doc.setFontSize(8.5);
-doc.text('OUTPASS FOR HOSTLERS', 14, 16);
-doc.setFontSize(8);
-doc.setFont('helvetica', 'normal');
-doc.text('GMR Nagar, RAJAM-532 127,  1800-129-118', 5, 21);
-
-// Draw a line to divide the header from the data
-doc.line(2, 23, 75, 23); // Divider line
-
-// Student Information Section
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(9.5);
-doc.text('Student Name:', 3, 28);
-doc.setFont('helvetica', 'normal');
-doc.text(userData.sname?.toString() || '', 28.5, 28); // Ensure toString()
-
-doc.setFont('helvetica', 'bold');
-doc.text('Roll No:', 3, 35);
-doc.setFont('helvetica', 'normal');
-doc.text(userData.studentId?.toString() || '',  28.5, 35);
-
-// Display Branch and Year separately
-doc.setFont('helvetica', 'bold');
-doc.text('Branch:', 3, 42);
-doc.setFont('helvetica', 'normal');
-doc.text(userData.branch?.toString() || '',  28.5, 42);
-
-doc.setFont('helvetica', 'bold');
-doc.text('Year:', 3, 49);
-doc.setFont('helvetica', 'normal');
-doc.text(userData.syear?.toString() || '',  28.5, 49);
-
-doc.setFont('helvetica', 'bold');
-doc.text('Block Name:', 3, 56);
-doc.setFont('helvetica', 'normal');
-doc.text(userData.hostelblock?.toString() || '',  28.5, 56);
-
-doc.setFont('helvetica', 'bold');
-doc.text('Room No:', 3, 63);
-doc.setFont('helvetica', 'normal');
-doc.text(userData.roomno?.toString() || '',  28.5, 63);
-
-// Separate Out Time and Out Date
-doc.setFont('helvetica', 'bold');
-doc.text('Out DateTime: ', 3, 70);
-doc.setFont('helvetica', 'normal');
-doc.text(`${formattedDate} ${formattedTime}`?.toString() || '',  28.5, 70); // Display only time
-
-
-doc.setFont('helvetica', 'italic');
-doc.text('Note: Return to college by 8:30pm',  10, 77); // Display only date
-
-// Display only date
-
-// Note Section
-// doc.setFont('helvetica', 'italic');
-// doc.text('Note: Return to college by 8:30 PM.', 4, 93);
-
-// Implementing the PDF printing logic
-const pdfBlob = doc.output('blob');
-const url = URL.createObjectURL(pdfBlob);
-const iframe = document.createElement('iframe');
-iframe.style.display = 'none';
-iframe.src = url;
-document.body.appendChild(iframe);
-iframe.onload = function() {
-iframe.contentWindow.print();
-};
-} else {
-alert("No user data to generate the Outpass.");
-}
-};
-
-
-
-const generateOutpassPDF1 = () => {
-  if (fingerprintData) {
-    
-
-    const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }); // Formats date as MM/DD/YYYY
-    const formattedTime = currentDate.toLocaleTimeString(); // Formats time as HH:MM:SS AM/PM
-
-    // Create PDF with 80x100 mm layout without margins
-    const doc = new jsPDF({
-      unit: 'mm',
-      format: [80, 100],
-      margin: 0 // Remove margins
-    });
-
-        
-
-// Add the image to the PDF at the specified position (x, y) and size (width, height)
-  // doc.addImage(base64image, 'JPEG', 16, 1, 40, 10); // Adjust position and size as needed
 
     // Header Section
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold'); // Bold font for header
-    doc.text('GMR INSTITUTE OF TECHNOLOGY', 1.5, 10); // Adjusted to start near the left
-    doc.setFontSize(9);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GMR INSTITUTE OF TECHNOLOGY', 1.5, 10);
+    doc.setFontSize(8.5);
     doc.text('OUTPASS FOR HOSTLERS', 14, 16);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text('GMR Nagar, RAJAM-532 127,  1800-129-118', 5, 21);
-    
-    // Draw a line to divide the header from the data
-    doc.line(2, 23, 75, 23); // Divider line
+
+    // Divider line
+    doc.line(2, 23, 75, 23);
 
     // Student Information Section
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9.5);
-    doc.text('Student Name:', 3, 26);
+    doc.text('Student Name:', 3, 28);
     doc.setFont('helvetica', 'normal');
-    doc.text(fingerprintData.sname?.toString() || '',  28.5, 26); // Ensure toString()
+    doc.text(userData.sname?.toString() || '', 28.5, 28);
 
     doc.setFont('helvetica', 'bold');
     doc.text('Roll No:', 3, 35);
     doc.setFont('helvetica', 'normal');
-    doc.text(fingerprintData.studentId?.toString() || '',  28.5, 35);
+    doc.text(userData.studentId?.toString() || '', 28.5, 35);
 
-    // Display Branch and Year separately
     doc.setFont('helvetica', 'bold');
     doc.text('Branch:', 3, 42);
     doc.setFont('helvetica', 'normal');
-    doc.text(fingerprintData.branch?.toString() || '',  28.5, 42);
+    doc.text(userData.branch?.toString() || '', 28.5, 42);
 
     doc.setFont('helvetica', 'bold');
     doc.text('Year:', 3, 49);
     doc.setFont('helvetica', 'normal');
-    doc.text(fingerprintData.syear?.toString() || '',  28.5, 49);
+    doc.text(userData.syear?.toString() || '', 28.5, 49);
 
     doc.setFont('helvetica', 'bold');
     doc.text('Block Name:', 3, 56);
     doc.setFont('helvetica', 'normal');
-    doc.text(fingerprintData.hostelblock?.toString() || '',  28.5, 56);
+    doc.text(userData.hostelblock?.toString() || '', 28.5, 56);
 
     doc.setFont('helvetica', 'bold');
     doc.text('Room No:', 3, 63);
     doc.setFont('helvetica', 'normal');
-    doc.text(fingerprintData.roomno?.toString() || '',  28.5, 63);
+    doc.text(userData.roomno?.toString() || '', 28.5, 63);
 
-    // Separate Out Time and Out Date
     doc.setFont('helvetica', 'bold');
     doc.text('Out DateTime:', 3, 70);
     doc.setFont('helvetica', 'normal');
-    doc.text(`${formattedDate} ${formattedTime}`?.toString() || '',  28.5, 70); // Display only time
-
-    // doc.text(formattedTime?.toString() || '',  28.5, 77); // Display only time
-
-    // doc.setFont('helvetica', 'bold');
-    // doc.text('Out Date:', 4.2, 84);
-    // doc.setFont('helvetica', 'normal');
-    // doc.text(formattedDate?.toString() || '',  28.5, 84); // Display only date
+    doc.text(`${formattedDate} ${formattedTime}`?.toString() || '', 28.5, 70);
 
     // Note Section
     doc.setFont('helvetica', 'italic');
-    doc.text('Note: Return to college by 8:30 PM.', 10, 77);
+    doc.text('Note: Return to college by 8:30pm', 10, 77);
 
-    // Implementing the PDF printing logic
+    // Signature Section
+    doc.setFont('helvetica', 'bold');
+    doc.text('Signature', 50, 97); // Positioned in the bottom-right corner
+    // doc.line(50, 92, 75, 92); // Line for the signature (space above the text)
+
+    // Print Logic
     const pdfBlob = doc.output('blob');
     const url = URL.createObjectURL(pdfBlob);
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.src = url;
     document.body.appendChild(iframe);
-    iframe.onload = function() {
+    iframe.onload = function () {
+      iframe.contentWindow.print();
+    };
+  } else {
+    alert("No user data to generate the Outpass.");
+  }
+};
+
+
+
+const generateOutpassPDF1 = () => {
+  if (fingerprintData) {
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    const formattedTime = currentDate.toLocaleTimeString();
+
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [80, 100],
+      margin: 0,
+    });
+
+    // Header Section
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GMR INSTITUTE OF TECHNOLOGY', 1.5, 10);
+    doc.setFontSize(9);
+    doc.text('OUTPASS FOR HOSTLERS', 14, 16);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('GMR Nagar, RAJAM-532 127,  1800-129-118', 5, 21);
+
+    // Divider line
+    doc.line(2, 23, 75, 23);
+
+    // Student Information Section
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.text('Student Name:', 3, 26);
+    doc.setFont('helvetica', 'normal');
+    doc.text(fingerprintData.sname?.toString() || '', 28.5, 26);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Roll No:', 3, 35);
+    doc.setFont('helvetica', 'normal');
+    doc.text(fingerprintData.studentId?.toString() || '', 28.5, 35);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Branch:', 3, 42);
+    doc.setFont('helvetica', 'normal');
+    doc.text(fingerprintData.branch?.toString() || '', 28.5, 42);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Year:', 3, 49);
+    doc.setFont('helvetica', 'normal');
+    doc.text(fingerprintData.syear?.toString() || '', 28.5, 49);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Block Name:', 3, 56);
+    doc.setFont('helvetica', 'normal');
+    doc.text(fingerprintData.hostelblock?.toString() || '', 28.5, 56);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Room No:', 3, 63);
+    doc.setFont('helvetica', 'normal');
+    doc.text(fingerprintData.roomno?.toString() || '', 28.5, 63);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Out DateTime:', 3, 70);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${formattedDate} ${formattedTime}`?.toString() || '', 28.5, 70);
+
+    // Note Section
+    doc.setFont('helvetica', 'italic');
+    doc.text('Note: Return to college by 8:30 PM.', 10, 77);
+
+    // Signature Section
+    doc.setFont('helvetica', 'bold');
+    doc.text('Signature', 50, 97); // Positioned in the bottom-right corner
+    // doc.line(50, 92, 75, 92); // Line for the signature (space above the text)
+
+    // Print Logic
+    const pdfBlob = doc.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = url;
+    document.body.appendChild(iframe);
+    iframe.onload = function () {
       iframe.contentWindow.print();
     };
   } else {
@@ -397,14 +373,13 @@ const generateOutpassPDF1 = () => {
 
 
 
-
   return (
     <div className="p-5 ">
       <h1 className="text-center text-white text-2xl font-bold">OutPass Generation</h1>
       {/* <p className="text-center">Welcome to the Gate Pass Generation system.</p> */}
       
       <div className="button-container text-center mb-5">
-        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200" onClick={handleVerifyFingerprint}>
+        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 hidden-mobile" onClick={handleVerifyFingerprint}>
           Verify Fingerprint
         </button>
         <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 ml-2" onClick={handleVerifyPinkPass}>
@@ -417,7 +392,7 @@ const generateOutpassPDF1 = () => {
         value={rollNo} 
         onChange={(e) => setRollNo(e.target.value)} 
         placeholder="Enter Roll Number" 
-        className="border rounded w-1/3 px-3 py-2 mx-auto mb-4 block"
+        className="border rounded w-full md:w-1/3 py-2 mx-auto mb-4 block mobile-padding"
       />
 
 {error && <p style={{
@@ -563,6 +538,28 @@ const generateOutpassPDF1 = () => {
           }}
 >{error1}</p>}
 
+<style jsx>{`
+        @media (max-width: 600px) {
+          .hidden-mobile {
+            display: none;
+          }
+          .mobile-padding {
+            width: calc(100% - 32px); /* Subtract left and right padding from full width */
+            margin-left: auto;
+      margin-right: auto;
+            padding-left: 20px; /* Adjust as needed */
+            padding-right: 20px; /* Adjust as needed */
+          }
+          .button-container {
+            flex-direction: column;
+          }
+          .button-container button {
+            margin-left: 15px;
+            margin-top: 10px;
+            margin-right:15px
+          }
+        }
+      `}</style>
     </div>
   );
 };

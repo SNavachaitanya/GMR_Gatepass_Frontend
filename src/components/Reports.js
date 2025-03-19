@@ -13,7 +13,7 @@ function Reports() {
     const [currentPage, setCurrentPage] = useState(1);
     const [filterType, setFilterType] = useState('all'); // State for dropdown
     const rowsPerPage = 10;
-    
+
     const handleFilter = () => {
         // If fromDate or toDate is not selected, set them to current date
         const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
@@ -33,7 +33,7 @@ function Reports() {
         setLoading(true);
         try {
             const response = await axios.get('http://82.29.162.24:3300/current-gatepass-report-filtered', {
-                params: { from, to, type: filterType } 
+                params: { from, to, type: filterType },
             });
             setGatepassData(response.data);
             setCurrentPage(1);
@@ -59,17 +59,13 @@ function Reports() {
         fetchData();
     }, []);
 
-    const handleDownload = async (filterType) => {  // Now receiving filterType as a parameter
-        // console.log('📥 Download request for:', filterType); // Debugging
-    
+    const handleDownload = async (filterType) => {
         try {
             const response = await axios.get('http://82.29.162.24:3300/download-current-gatepass-report', {
-                params: { filterType },  // Send filterType as a query parameter
-                responseType: 'blob'
+                params: { filterType },
+                responseType: 'blob',
             });
-    
-            // console.log('✅ Response received:', response); // Debugging
-    
+
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -77,11 +73,9 @@ function Reports() {
             document.body.appendChild(link);
             link.click();
         } catch (error) {
-            // console.error('❌ Error downloading report:', error);
+            console.error('Error downloading report:', error);
         }
     };
-    
-    
 
     const handleSaveTime = async () => {
         try {
@@ -95,14 +89,12 @@ function Reports() {
     const handleSendReport = async () => {
         setLoading(true);
         try {
-            // Prepare the data to send
             const reportData = {
-                fromDate: fromDate || new Date().toISOString().split('T')[0], // Default to today if not set
-                toDate: toDate || new Date().toISOString().split('T')[0],     // Default to today if not set
-                filterType: filterType
+                fromDate: fromDate || new Date().toISOString().split('T')[0],
+                toDate: toDate || new Date().toISOString().split('T')[0],
+                filterType: filterType,
             };
-    
-            // Make the POST request to send the report
+
             await axios.post('http://82.29.162.24:3300/send-report', reportData);
             alert('Report sent successfully!');
         } catch (error) {
@@ -112,133 +104,137 @@ function Reports() {
             setLoading(false);
         }
     };
-    
 
     const indexOfLastRow = currentPage * rowsPerPage;
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     const currentRows = gatepassData.slice(indexOfFirstRow, indexOfLastRow);
     const totalPages = Math.ceil(gatepassData.length / rowsPerPage);
+
     if (loading) {
         return (
-          <div className="flex justify-center items-center h-screen">
-            <div className="spinner border-t-4 border-gray-800 rounded-full w-16 h-16 animate-spin"></div>
-          </div>
+            <div className="flex justify-center items-center h-screen">
+                <div className="spinner border-t-4 border-gray-800 rounded-full w-16 h-16 animate-spin"></div>
+            </div>
         );
-    
-      }
+    }
 
     return (
-        <div>
-            <h1 className="text-center font-bold  text-gray-800 mb-4 mt-4">Current Report</h1>
-            <div className="flex justify-center mb-4 ml-56 mr-56">
-                <input
-                    type="date"
-                    value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)}
-                    className="mr-2 text-center"
-                />
-                <input
-                    type="date"
-                    value={toDate}
-                    onChange={(e) => setToDate(e.target.value)}
-                    className="mr-2 text-center"
-                />
-                <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="mr-2 border border-gray-300 rounded text-center"
-                >
-                    <option value="all">All</option>
-                    <option value="gatepass">Gatepass</option>
-                    <option value="outpass">Outpass</option>
-                </select>
-                <button
-                    className="bg-gray-800 text-white font-bold mr-2 py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200"
-                    onClick={handleFilter}
-                >
-                    Filter
-                </button>
-                <button
-                    className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 ml-2"
-                    onClick={handleSendReport}
-                >
-                    <FontAwesomeIcon icon={faPaperPlane} /> Send Report
-                </button>
+        <div className="p-4">
+            <h1 className="text-center font-bold text-gray-800 mb-4 mt-4">Current Report</h1>
+            <div className="flex flex-col md:flex-row justify-center items-center gap-2 mb-4">
+                {/* Date Fields and Filter Dropdown */}
+                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    <input
+                        type="date"
+                        value={fromDate}
+                        onChange={(e) => setFromDate(e.target.value)}
+                        className="w-full md:w-48 p-2 border border-gray-300 rounded"
+                    />
+                    <input
+                        type="date"
+                        value={toDate}
+                        onChange={(e) => setToDate(e.target.value)}
+                        className="w-full md:w-48 p-2 border border-gray-300 rounded"
+                    />
+                    <select
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        className="w-full md:w-48 p-2 border border-gray-300 rounded"
+                    >
+                        <option value="all">All</option>
+                        <option value="gatepass">Gatepass</option>
+                        <option value="outpass">Outpass</option>
+                    </select>
+                </div>
+                {/* Filter and Send Report Buttons */}
+                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    <button
+                        className="w-full md:w-auto bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200"
+                        onClick={handleFilter}
+                    >
+                        Filter
+                    </button>
+                    <button
+                        className="w-full md:w-auto bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200"
+                        onClick={handleSendReport}
+                    >
+                        <FontAwesomeIcon icon={faPaperPlane} /> Send Report
+                    </button>
+                </div>
             </div>
-            {loading ? (
-                <p>Loading...</p>
-            ) : (
-                <table className=' text-gray-900 text-center '>
+            <div className="overflow-x-auto">
+                <table className="w-full text-gray-900 text-center">
                     <thead>
                         <tr>
-                            <th className='text-center'>Name</th>
-                            <th className='text-center'>Roll No</th>
-                            <th className='text-center'>Year</th>
-                            <th className='text-center'>Branch</th>
-                            <th className='text-center'>Hostel Block Name</th>
-                            <th className='text-center'>Room No</th>
-                            <th className='text-center'>Parent No</th>
-                            <th className='text-center'>Out Time</th>
-                            <th className='text-center'>In Time</th>
-                            <th className='text-center'>Date</th>
-                           
+                            <th className="p-2">Name</th>
+                            <th className="p-2">Roll No</th>
+                            <th className="p-2">Year</th>
+                            <th className="p-2">Branch</th>
+                            <th className="p-2">Hostel Block</th>
+                            <th className="p-2">Room No</th>
+                            <th className="p-2">Parent No</th>
+                            <th className="p-2">Out Time</th>
+                            <th className="p-2">In Time</th>
+                            <th className="p-2">Date</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentRows.map((row, index) => (
-                            <tr key={index}>
-                                <td>{row.sname}</td>
-                                <td>{row.studentId}</td>
-                                <td>{row.syear}</td>
-                                <td>{row.branch}</td>
-                                <td>{row.hostelblock}</td>
-                                <td>{row.roomno}</td>
-                                <td>{row.parentno}</td>
-                                <td>{row.outTime}</td>
-                                <td>{row.inTime}</td>
-                                <td>{row.date}</td>
-                               
+                            <tr key={index} className="border-b">
+                                <td className="p-2">{row.sname}</td>
+                                <td className="p-2">{row.studentId}</td>
+                                <td className="p-2">{row.syear}</td>
+                                <td className="p-2">{row.branch}</td>
+                                <td className="p-2">{row.hostelblock}</td>
+                                <td className="p-2">{row.roomno}</td>
+                                <td className="p-2">{row.parentno}</td>
+                                <td className="p-2">{row.outTime}</td>
+                                <td className="p-2">{row.inTime}</td>
+                                <td className="p-2">{row.date}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-            )}
+            </div>
             <div className="flex justify-between mt-4">
                 <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(currentPage - 1)}
-                    className={`text-gray font-bold py-2 px-3 rounded shadow-md  transition duration-300 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`text-gray font-bold py-2 px-3 rounded shadow-md transition duration-300 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     <FontAwesomeIcon icon={faArrowLeft} />
                 </button>
-                <span className='text-gray'>Page {currentPage} of {totalPages}</span>
+                <span className="text-gray">Page {currentPage} of {totalPages}</span>
                 <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(currentPage + 1)}
-                    className={`text-gray font-bold py-2 px-3 rounded shadow-md  transition duration-300 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`text-gray font-bold py-2 px-3 rounded shadow-md transition duration-300 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     <FontAwesomeIcon icon={faArrowRight} />
                 </button>
             </div>
-            <div className="flex items-center justify-between mt-4">
-            <button className="bg-gray-900 text-white ml-3 font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200" 
-            onClick={() => handleDownload(filterType)}>  {/* Pass filterType here */}
-            Download Current Report
-            </button>
-
-                <div className="flex items-center">
+            <div className="flex flex-col md:flex-row items-center justify-between mt-4 gap-2">
+                <button
+                    className="w-full md:w-auto bg-gray-900 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200"
+                    onClick={() => handleDownload(filterType)}
+                >
+                    Download Current Report
+                </button>
+                <div className="flex items-center gap-2">
                     <input
-                        type="time" 
+                        type="time"
                         value={reportTime}
                         onChange={(e) => setReportTime(e.target.value)}
-                        className="mr-2 w-30 bg-transparent outline-none text-gray"
+                        className="w-full md:w-auto p-2 border border-gray-300 rounded"
                     />
-                    <button className="bg-gray-800 text-white font-bold py-2 px-4 mr-3 rounded shadow-md hover:bg-gray-600 transition duration-200" onClick={handleSaveTime}>
-                        Save time to send report
+                    <button
+                        className="w-full md:w-auto bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200"
+                        onClick={handleSaveTime}
+                    >
+                        Save Time
                     </button>
                 </div>
             </div>
-            <br></br>
         </div>
     );
 }

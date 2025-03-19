@@ -3,18 +3,62 @@
   width: 100vw;
   filter: brightness(0.6);
 }
-.welcome{
-  margin-top: -100px;
+.welcome {
+  margin-top: -200px; /* Adjust as needed */
   font-family: 'Lucida Sans', Geneva, Verdana, sans-serif;
   font-weight: bold;
   color: whitesmoke;
+  background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+  padding: 30px 30px; /* Padding for better spacing */
+  border-radius: 15px; /* Rounded corners */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Shadow for depth */
+  text-align: center; /* Center text */
+  transition: transform 0.3s ease, background 0.3s ease; /* Smooth transitions */
+  animation: bounceIn 2s ease-in-out; /* Bounce-in animation */
+}
+
+.welcome:hover {
+  transform: scale(1.05); /* Slightly enlarge on hover */
+  background: rgba(1, 1, 6, 0.89); /* Darker background on hover */
+}
+
+/* Keyframes for bounce-in animation */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px); /* Start slightly below */
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-10px); /* Move up slightly */
+  }
+  100% {
+    transform: translateY(0); /* End at original position */
+  }
+}
+
+/* Keyframes for fade-in animation (if you want to keep it) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px); /* Slide in from above */
+  }
+  to {
+    opacity: 1; /* Corrected from 3 to 1 */
+    transform: translateY(0);
+  }
 }
 h1{
   font-family: 'Lucida Sans', Geneva, Verdana, sans-serif;
   font-weight: bolder;
-  font-size: 35px;
+  font-size: 40px;
 }
 .buttons{
   margin-top: -70px;
-  
+} 
+h2{
+  color: white;
 }
+
+
+ 

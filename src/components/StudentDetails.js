@@ -19,10 +19,8 @@ function StudentDetails() {
             const response = await axios.get(`http://82.29.162.24:3300/verify-rollupdate/${rollNo}`);
             if (response.data && response.data.length > 0) {
                 enqueueSnackbar('Student data loaded successfully.', { variant: 'success' });
-                // Navigate to Profile page if the student data is found
                 navigate(`/studentprofile/${rollNo}`);
             } else {
-                // Show Snackbar if the student is not found
                 enqueueSnackbar('No student found with this roll number.', { variant: 'error' });
             }
         } catch (error) {

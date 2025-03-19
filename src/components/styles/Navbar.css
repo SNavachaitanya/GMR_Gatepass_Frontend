@@ -1,94 +1,221 @@
-/* Navbar container */
 .navbar {
-  background-color: #E0F0FF;
-  padding: 2px 2px;
-  font-size: 18px;
-  display: flex;
-  z-index: 2;
-  justify-content: center; /* Center the nav items */
+  background: linear-gradient(135deg, #0b0b1b, #7bacde);
+  padding: 20px 40px;
+  color: #fff;
+  position: relative;
+  z-index: 999;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  font-family: 'Segoe UI', sans-serif;
 }
 
-/* Navbar unordered list */
-.navbar ul {
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.menu-icon {
+  display: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #fff;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.menu-icon:hover {
+  transform: scale(1.1);
+  color: #ffcc00;
+}
+
+.nav-menu {
+  display: flex;
   list-style: none;
+  align-items: center;
+  justify-content: space-evenly;  /* Ensures equal spacing */
   margin: 0;
   padding: 0;
-  display: flex;
-  justify-content: center; /* Center the nav items */
+  flex: 1; /* Full width for even distribution */
 }
 
-/* Navbar list items */
-.navbar ul li {
-  position: relative; /* Required for positioning dropdown */
-  margin: 0 15px; /* Add some spacing between items */
-}
-
-/* Navbar links */
-.navbar ul li a {
-  text-decoration: none;
-  color: black;
-  font-size: 15px;
-  display: block;
+.nav-menu li {
+  flex: 1; /* Equal width for all nav items */
+  text-align: center; /* Center text/icon inside */
+  cursor: pointer;
+  position: relative;
   padding: 10px 15px;
-  
-  font-family: 'Lucida Sans', Geneva, Verdana, sans-serif;
-  transition: all 0.3s ease; /* Smooth transitions for hover effects */
+  border-radius: 8px;
+  transition: all 0.4s ease;
+  margin: 0; /* Removed margin to maintain equal spacing */
 }
 
-/* Hover effect for links */
-.navbar ul li a:hover {
-  color: #056c4d;
+.nav-menu li::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #ffcc00, #ff4d4d);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s ease;
+}
+
+.nav-menu li:hover::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.nav-menu li:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.nav-menu a, .dropdown-item {
+  text-decoration: none;
+  color: #fff;
   font-size: 16px;
+  font-weight: 500;
+  transition: color 0.3s ease;
 }
 
+.nav-menu li:hover a {
+  color: #ffcc00;
+}
 
+.icon-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
+/* Dropdown Styling */
+.dropdown-content {
+  display: none;
+  flex-direction: column;
+  background: linear-gradient(135deg, #1a2a3a, #0b0b1b);
+  padding: 10px;
+  border-radius: 8px;
+  position: absolute;
+  top: 50px;
+  left: 0;
+  min-width: 220px;
+  z-index: 1000;
+  max-width: 280px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.dropdown-content.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown-content a {
+  display: flex; /* Ensures icon and text stay inline */
+  align-items: center; 
+  gap: 8px;
+  padding: 10px 15px;
+  font-size: 14px;
+  border-radius: 6px;
+  color: #fff;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  text-decoration: none;
+}
+
+/* Hover effect for dropdown items */
+.dropdown-content a:not(.logout-btn):hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffcc00;
+}
+
+/* Logout button styling */
 .logout-btn {
-  font-family: 'Lucida Sans', Geneva, Verdana, sans-serif;
-  font-style: italic;
-  color: black; /* White text color */
-  padding: 8px 12px; /* Padding for the button */
-  border: none; /* Remove default border */
-  border-radius: 5px; /* Rounded corners */
-  cursor: pointer; /* Change cursor to pointer */
-  transition: color 0.3s ease; /* Smooth transition for hover */
+  background: linear-gradient(135deg, #ff4d4d, #cc0000);
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+  width: 100%;
+  display: block;
+  text-decoration: none;
+  font-weight: 500;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .logout-btn:hover {
-  color:rgb(168, 8, 8); /* Change color on hover */
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(255, 77, 77, 0.3);
 }
 
-/* Dropdown content container */
-.dropdown-content {
-  opacity: 0;
-  transform: translateY(-10px);
-  display: none;
-  position: absolute;
-  background-color: white;
-  min-width: 160px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5); /* Soft shadow for the dropdown */
-  border-radius: 8px; /* Rounded corners */
-  z-index: 1;
-  transition: all 0.3s ease; /* Smooth appearance for dropdown */
-}
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 15px 20px;
+  }
 
-/* Dropdown links */
-.dropdown-content a {
-  color: black;
-  text-decoration: none;
-  display: block;
-  transition: all 0.3s ease; /* Smooth hover effect for dropdown links */
-}
+  .navbar-container {
+    justify-content: space-between;
+  }
 
-/* Hover effect for dropdown links */
-.dropdown-content a:hover {
-  background-color: #f3f9f9; /* Light grey background on hover */
-  color: #056c4d; /* Change text color */
-}
+  .menu-icon {
+    display: block;
+  }
 
-/* Show dropdown content on hover */
-.dropdown:hover .dropdown-content {
-  display: block;
-  opacity: 1;
-  transform: translateY(0); /* Animate dropdown to slide down */
+  .nav-menu {
+    display: none;
+    flex-direction: column;
+    background: linear-gradient(135deg, #0b0b1b, #1a2a3a);
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 20px;
+    border-radius: 0 0 8px 8px;
+    z-index: 999;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .nav-menu.active {
+    display: flex;
+  }
+
+  .nav-menu li {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+  }
+
+  .dropdown-content {
+    position: relative;
+    background: linear-gradient(135deg, #1a2a3a, #0b0b1b);
+    padding: 10px;
+    top: 0;
+    left: 0;
+    min-width: unset;
+    max-width: 100%;
+    box-shadow: none;
+  }
+
+  .dropdown-content a {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 10px 0;
+  }
+
+  .logout-btn {
+    width: 100%;
+    text-align: left;
+  }
 }

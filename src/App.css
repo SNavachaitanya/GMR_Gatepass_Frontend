@@ -9,17 +9,63 @@ body {
 
 /* Top Black Header */
 .header {
-  background-color: #000000; /* Black background */
+  background: linear-gradient(135deg, #7bacde, #0b0b1b); /* Initial gradient background */
   color: white;
-  padding: 15px 30px;
-  font-size: 24px;
+  padding: 28px 25px; /* Padding for spacing */
+  font-size: 28px; /* Font size */
   font-weight: bold;
-    /* Make it take the full width */
-      /* Optional: Set a background color */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);  /* Optional: Add a shadow for depth */
-    
-   
+  text-align: center; /* Center the text */
+  text-transform: uppercase; /* Uppercase text */
+  letter-spacing: 2px; /* Spacing between letters */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+  position: relative; /* For pseudo-elements */
+  overflow: hidden; /* Prevent overflow */
+  animation: backgroundAnimation 10s ease infinite; /* Background animation */
 }
+
+/* Pulsing glow effect */
+@keyframes pulse {
+  0% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 
+                 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 1), 
+                 0 0 30px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 
+                 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Apply the pulsing glow effect */
+/* Updated Border Animation */
+/* Updated Border Animation - Elegant Glow */
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #cefd24, #f33914);
+  border-radius: 2px;
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* Glow Pulse Animation */
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 5px #421af7, 0 0 10px #fd502d;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 10px #421af7, 0 0 20px #fd502d;
+  }
+}
+
 .fullscreen-bg {
   position: fixed;
   top: 0;

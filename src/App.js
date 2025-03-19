@@ -24,6 +24,8 @@ import AllPasses from './components/AllPasses';
 import Profile from './components/Profile';
 import UpdateProfile from './components/UpdateProfile';
 import { SnackbarProvider } from 'notistack';
+import Settings from './components/Settings'; // Import the Settings component
+
 
 function App() {
   const [username, setUsername] = useState('');
@@ -476,6 +478,26 @@ function App() {
             } 
           />
           
+          <Route 
+  path="/settings/holiday" 
+  element={
+    <PrivateRoute setUsername={setUsername}>
+      <div className="fullscreen-bg"></div> 
+      <div className="overlay"></div> 
+      <div className="content">
+        <div className="header flex justify-between items-center p-4">
+          <h1 className="text-2xl font-bold" style={{fontFamily:"Verdana, Geneva, Tahoma, sans-serif"}}>Settings</h1>
+          <div className="flex items-center">
+            <span className="text-lg mr-2">{username}</span>
+            <FaUserCircle className="text-3xl" />
+          </div>
+        </div>
+        <Navbar username={username}/>
+        <Settings />
+      </div>
+    </PrivateRoute>
+  } 
+/>
           <Route 
             path="/student-details" 
             element={

@@ -126,7 +126,7 @@ const Pass = () => {
       {/* <p className="text-center">Welcome to the Gate Pass Generation system.</p> */}
       
       <div className="button-container text-center mb-5">
-        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200" onClick={handleVerifyFingerprint}>
+        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 hidden-mobile" onClick={handleVerifyFingerprint}>
           Verify Fingerprint
         </button>
         <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 ml-2" onClick={handleVerifyPinkPass}>
@@ -139,7 +139,7 @@ const Pass = () => {
         value={rollNo} 
         onChange={(e) => setRollNo(e.target.value)} 
         placeholder="Enter Roll Number" 
-        className="border rounded w-1/3 px-3 py-2 mx-auto mb-4 block"
+        className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto mb-4 block"
       />
        {error && <p style={{
             color: 'white',
@@ -257,7 +257,27 @@ const Pass = () => {
     </div>
 )}
      
-
+     <style jsx>{`
+        @media (max-width: 600px) {
+          .hidden-mobile {
+            display: none;
+          }
+          .mobile-padding {
+            width: calc(100% - 32px); /* Subtract left and right padding from full width */
+            margin-left: auto;
+      margin-right: auto;
+            padding-left: 20px; /* Adjust as needed */
+            padding-right: 20px; /* Adjust as needed */
+          }
+          .button-container {
+            flex-direction: column;
+          }
+          .button-container button {
+            margin-left: 0;
+            margin-top: 10px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

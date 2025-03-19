@@ -199,7 +199,7 @@ const AdminPass = () => {
   
       const doc = new jsPDF({
         unit: 'mm',
-        format: [80, 100],
+        format: [80, 110],
         margin: 0
       });
   
@@ -264,6 +264,9 @@ const AdminPass = () => {
       doc.text('In DateTime:', 3, 91);
       doc.setFont('helvetica', 'normal');
       doc.text(`${formattedInDate} ${formattedInTime}`, 29, 91);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Signature', 50, 109); 
   
       // Implementing PDF printing
       const pdfBlob = doc.output('blob');
@@ -311,7 +314,7 @@ const AdminPass = () => {
   
       const doc = new jsPDF({
         unit: 'mm',
-        format: [80, 100],
+        format: [80, 110],
         margin: 0 // Remove margins
       });
 
@@ -382,6 +385,9 @@ doc.text('In DateTime:', 3, 91);
 doc.setFont('helvetica', 'normal');
 doc.text(`${formattedInDate} ${formattedInTime}`, 29, 91);
 
+doc.setFont('helvetica', 'bold');
+doc.text('Signature:', 50, 109);
+
 // Display only date
 
 // Note Section
@@ -419,7 +425,7 @@ alert("No user data to generate the Pinkpass.");
       {/* <p className="text-center">Welcome to the Gate Pass Generation system.</p> */}
       
       <div className="button-container text-center mb-5">
-        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200" onClick={handleVerifyFingerprint}>
+        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 hidden-mobile" onClick={handleVerifyFingerprint}>
           Generate using Fingerprint
         </button>
         <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 ml-2" onClick={handleVerifyPinkPass}>
@@ -432,7 +438,7 @@ alert("No user data to generate the Pinkpass.");
         value={rollNo} 
         onChange={(e) => setRollNo(e.target.value)} 
         placeholder="Enter Roll Number" 
-        className="border rounded w-1/3 px-3 py-2 mx-auto mb-4 block"
+        className="border rounded w-full md:w-1/3 py-2 mx-auto mb-4 block mobile-padding"
       />
       <div className="mb-4">
   <label htmlFor="expectedOutTime" className="block text-white text-center">
@@ -443,7 +449,7 @@ alert("No user data to generate the Pinkpass.");
     type="datetime-local"
     value={expectedOutTime || ""}
     onChange={(e) => setExpectedOutTime(e.target.value)}
-    className="border rounded w-1/3 px-3 py-2 mx-auto block"
+    className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto block mobile-padding"
   />
 </div>
 
@@ -456,7 +462,7 @@ alert("No user data to generate the Pinkpass.");
     type="datetime-local"
     value={expectedInTime || ""}
     onChange={(e) => setExpectedInTime(e.target.value)}
-    className="border rounded w-1/3 px-3 py-2 mx-auto block"
+    className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto block mobile-padding"
   />
 </div>
 
@@ -596,6 +602,28 @@ alert("No user data to generate the Pinkpass.");
           }}
 >{error1}</p>}
 
+<style jsx>{`
+        @media (max-width: 600px) {
+          .hidden-mobile {
+            display: none;
+          }
+          .mobile-padding {
+            width: calc(100% - 32px); /* Subtract left and right padding from full width */
+            margin-left: auto;
+      margin-right: auto;
+            padding-left: 20px; /* Adjust as needed */
+            padding-right: 20px; /* Adjust as needed */
+          }
+          .button-container {
+            flex-direction: column;
+          }
+          .button-container button {
+            margin-left: 15px;
+            margin-top: 10px;
+            margin-right: 15px;
+          }
+        }
+      `}</style>
     </div>
   );
 };
