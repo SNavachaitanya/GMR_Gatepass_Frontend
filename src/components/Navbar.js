@@ -21,6 +21,7 @@ import {
   FaCheckCircle,
   FaFileAlt,
   FaUserGraduate,
+  FaCog, // Add this line
 } from 'react-icons/fa';
 import { useSnackbar } from 'notistack';
 
@@ -237,7 +238,9 @@ const Navbar = ({ username }) => {
             {username === 'admin' && (
   <li>
     <Link to="/settings/holiday" onClick={handleMenuItemClick}>
-      <span className='flex items-center'>Settings</span>
+      <span className='flex items-center'>
+        <FaCog className="mr-2" /> Settings
+      </span>
     </Link>
   </li>
 )}

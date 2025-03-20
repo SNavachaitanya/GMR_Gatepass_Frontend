@@ -87,8 +87,7 @@ const Home = () => {
           zIndex: 50,
         }}
       >
-        Designed and Developed by L.Chandini, M.Naveen, K.Santosh, M. Bala Krishna under the guidance of <b>Dr.K.Lakshman Rao</b>, Professor, GMRIT @2021-25
-      </footer>
+Designed and Developed by  S.Navachaitanya , S.Sanjay Krishna , U.Krishna Chaitanya, H.Shruthi, T.Bhargav under the guidance of <b>Dr.K.Lakshman Rao</b> , Professor , GMRIT @2022-26      </footer>
     </div>
   );
 };
