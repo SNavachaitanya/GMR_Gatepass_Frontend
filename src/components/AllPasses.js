@@ -34,7 +34,7 @@ const AllPasses= () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://82.29.162.24:3300/all-passes');
+            const response = await axios.get('http://82.29.162.24/all-passes');
             setStudents(response.data);
         } catch (error) {
             console.error('Error fetching gatepass data:', error);
@@ -49,7 +49,7 @@ const AllPasses= () => {
  const fetchStudentsById = async (searchId) => {
     if (searchId) {
         try {
-            const response = await axios.get('http://82.29.162.24:3300/passes-filtered-by-id', {
+            const response = await axios.get('http://82.29.162.24/passes-filtered-by-id', {
                 params: { id: searchId || ''}
             });
             setStudents(response.data);
@@ -62,7 +62,7 @@ const AllPasses= () => {
 };
 const fetchDataAll = async () => {
     try {
-        const response = await axios.get('http://82.29.162.24:3300/all-passes');
+        const response = await axios.get('http://82.29.162.24/all-passes');
         setStudents(response.data);
     } catch (error) {
         console.error('Error fetching gatepass data:', error);
@@ -85,7 +85,7 @@ const handleInputChange = (e) => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://82.29.162.24:3300/passes-filtered', {
+            const response = await axios.get('http://82.29.162.24/passes-filtered', {
                 params: { gender, blockName} 
             });
             setStudents(response.data);

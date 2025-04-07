@@ -1,435 +1,151 @@
 import React, { useState } from 'react';
-import './styles/Pass.css'; // Ensure you import the CSS file for styling
-import jsPDF from 'jspdf';
+import './styles/Pass.css';
 import axios from 'axios';
+import { useSnackbar } from 'notistack';
 
 const AdminPass = () => {
   const [rollNo, setRollNo] = useState('');
   const [userData, setUserData] = useState(null);
+  const [fingerprintData, setFingerprintData] = useState(null);
   const [error, setError] = useState('');
-  const [error1, setError1] = useState('');
   const [expectedOutTime, setExpectedOutTime] = useState('');
   const [expectedInTime, setExpectedInTime] = useState('');
-  const [fingerprintData, setFingerprintData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState('');
+  const { enqueueSnackbar } = useSnackbar();
 
-  // Function to verify and fetch full data for Pink Pass
+  // Generate random token
+  const generateToken = () => {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
+  };
+
   const handleVerifyPinkPass = async () => {
     setFingerprintData(null);
-    setError1(null);
+    setError('');
+    
+    if (!rollNo || !expectedOutTime || !expectedInTime) {
+      setError('Please fill all fields');
+      return;
+    }
 
-    if (rollNo.trim() === '') {
-        setError('Please enter a valid Roll Number.');
-        return;
-    }
-    if (expectedOutTime.trim() === '') {
-        setError('Please enter a valid Expected Out Time.');
-        return;
-    }
-    if (expectedInTime.trim() === '') {
-        setError('Please enter a valid Expected In Time.');
-        return;
-    }
+    // Generate token in frontend
+    const newToken = generateToken();
+    setToken(newToken);
 
     try {
-        setLoading(true);
-
-        console.log(`Verifying Roll No: ${rollNo}`);
-        const response = await fetch(`http://82.29.162.24:3300/verify-roll/${rollNo}`);
-
-        if (response.ok) {
-            const data = await response.json();
-            setUserData(data);
-            setError('');
-
-            // Debugging log before calling `updateGatepassIssue`
-            console.log("Calling updateGatepassIssue with values:", {
-                rollNo,
-                expectedOutTime,
-                expectedInTime
-            });
-
-            // Ensure `expectedOutTime` and `expectedInTime` are properly formatted
-            const formattedOutTime = new Date(expectedOutTime).toISOString();
-            const formattedInTime = new Date(expectedInTime).toISOString();
-
-            await updateGatepassIssue(rollNo, formattedOutTime, formattedInTime);
-        } else if (response.status === 404) {
-            setError('User not found');
-            setUserData(null);
-        } else {
-            setError('Error fetching user data');
-            setUserData(null);
-        }
+      setLoading(true);
+      const response = await fetch(`http://82.29.162.24/verify-roll/${rollNo}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUserData(data);
+        await updateGatepassIssue(rollNo, expectedOutTime, expectedInTime, newToken);
+      } else {
+        setError(response.status === 404 ? 'User not found' : 'Error fetching data');
+      }
     } catch (err) {
-        console.error("Error in handleVerifyPinkPass:", err);
-        setError('Server error');
-        setUserData(null);
+      console.error(err);
+      setError('Server error');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
-
- // Function to update gate pass with current date and time
- const updateGatepassIssue = async (rollNo, expectedOutTime, expectedInTime) => {
-  try {
-    const currentDateTime = new Date();
-    const expectedOutDateTime = new Date(expectedOutTime);
-    const expectedInDateTime = new Date(expectedInTime);
-
-    console.log("Raw Expected Out Time:", expectedOutTime);
-    console.log("Parsed Expected Out Time:", expectedOutDateTime.toISOString());
-    console.log("Raw Expected In Time:", expectedInTime);
-    console.log("Parsed Expected In Time:", expectedInDateTime.toISOString());
-
-    // Validate Dates
-    if (isNaN(expectedOutDateTime.getTime()) || isNaN(expectedInDateTime.getTime())) {
-      console.error("Invalid date format detected!");
-      return;
+  const updateGatepassIssue = async (rollNo, outTime, inTime, token) => {
+    try {
+      const response = await axios.post('http://82.29.162.24/update-gatepass-issue', {
+        roll_no: rollNo,
+        expected_out_time: new Date(outTime).toISOString(),
+        expected_in_time: new Date(inTime).toISOString(),
+        token: token
+      });
+      
+      if (response.data.success) {
+        await handleSendQRCode(rollNo, token);
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to update gatepass');
+      throw err;
     }
-
-    if (expectedOutDateTime < currentDateTime) {
-      setError('Invalid Expected Out Time');
-      return;
-    }
-
-    if (expectedInDateTime < expectedOutDateTime) {
-      setError('Expected In Time must be after Expected Out Time.');
-      return;
-    }
-
-    // Ensure the expected out time is within 48 hours
-    const hoursDifference = (expectedOutDateTime - currentDateTime) / (1000 * 60 * 60);
-    if (hoursDifference > 48) {
-      setError('You cannot issue a pink pass more than 48 hours in advance.');
-      return;
-    }
-
-    // Send properly formatted data to the server
-    const response = await fetch('http://82.29.162.24:3300/update-gatepass-issue', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-          roll_no: rollNo,
-          current_time: new Date().toISOString(),
-          expected_out_time: expectedOutDateTime?.toISOString(),
-          expected_in_time: expectedInDateTime?.toISOString()
-      }),
-  });
-  
-  
-
-    if (!response.ok) {
-      const data = await response.json();
-      setError(data.message);
-      console.error('Error updating gate pass:', data.message);
-    } else {
-      console.log('Gate pass updated successfully.');
-    }
-  } catch (err) {
-    console.error('Error:', err);
-  }
-};
-
-
+  };
 
   const handleVerifyFingerprint = async () => {
     setUserData(null);
-    setError(null)
-   
+    setError('');
+    
+    if (!expectedOutTime || !expectedInTime) {
+      setError('Please enter expected times');
+      return;
+    }
 
-    if (expectedOutTime.trim() === '') {
-        setError('Please enter a valid Expected Out Time.');
-        return;
-      }
     try {
-        const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
-        setLoading(true)
-        const data = response.data;
+      setLoading(true);
+      const response = await axios.post('http://82.29.162.24/run-jar-verify');
+      const data = response.data;
 
-
-        // Assuming data is the student object now
-        if (data && Object.keys(data).length > 0) {
-            setFingerprintData(data); // Set the entire student data
-            await updateGatepassIssue(data.studentId,expectedOutTime); // Use data.studentId
-            setLoading(false)
-        } else {
-            alert("No user found.");
-            setLoading(false)
-
-        }
+      if (data?.studentId) {
+        // Generate token in frontend
+        const newToken = generateToken();
+        setToken(newToken);
+        
+        setFingerprintData(data);
+        await updateGatepassIssue(data.studentId, expectedOutTime, expectedInTime, newToken);
+      } else {
+        setError('No user found');
+      }
     } catch (error) {
-        console.error('Error running JAR:', error);
-        setError()
-        setLoading(false)
-
-        // alert('Error occurred while adding fingerprint.');
-    }
-};
-
-
-
-  // Function to generate Pink Pass PDF
-  const generatePinkPassPDF = () => {
-    if (userData) {
-      const currentDate = new Date();
-      const formattedDate = currentDate.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-      const formattedTime = currentDate.toLocaleTimeString();
-  
-      const expectedOutDateTime = new Date(expectedOutTime);
-      const formattedOutDate = expectedOutDateTime.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-      const formattedOutTime = expectedOutDateTime.toLocaleTimeString();
-  
-      const expectedInDateTime = new Date(expectedInTime);
-      const formattedInDate = expectedInDateTime.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-      const formattedInTime = expectedInDateTime.toLocaleTimeString();
-  
-      const doc = new jsPDF({
-        unit: 'mm',
-        format: [80, 110],
-        margin: 0
-      });
-  
-      // Header Section
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('GMR INSTITUTE OF TECHNOLOGY', 1.5, 16);
-      doc.setFontSize(8.5);
-      doc.text('PINKPASS FOR HOSTLERS', 14, 21);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.text('GMR Nagar, RAJAM-532 127,  1800-129-118', 5, 26);
-  
-      doc.line(2, 28, 75, 28); // Divider line
-  
-      // Student Information
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9.5);
-      doc.text('Student Name:', 3, 35);
-      doc.setFont('helvetica', 'normal');
-      doc.text(userData.sname?.toString() || '', 28.5, 35);
-  
-      doc.setFont('helvetica', 'bold');
-      doc.text('Roll No:', 3, 42);
-      doc.setFont('helvetica', 'normal');
-      doc.text(userData.studentId?.toString() || '', 28.5, 42);
-  
-      doc.setFont('helvetica', 'bold');
-      doc.text('Branch:', 3, 49);
-      doc.setFont('helvetica', 'normal');
-      doc.text(userData.branch?.toString() || '', 28.5, 49);
-  
-      doc.setFont('helvetica', 'bold');
-      doc.text('Year:', 3, 56);
-      doc.setFont('helvetica', 'normal');
-      doc.text(userData.syear?.toString() || '', 28.5, 56);
-  
-      doc.setFont('helvetica', 'bold');
-      doc.text('Block Name:', 3, 63);
-      doc.setFont('helvetica', 'normal');
-      doc.text(userData.hostelblock?.toString() || '', 28.5, 63);
-  
-      doc.setFont('helvetica', 'bold');
-      doc.text('Room No:', 3, 70);
-      doc.setFont('helvetica', 'normal');
-      doc.text(userData.roomno?.toString() || '', 28.5, 70);
-  
-      // Issue Date-Time
-      doc.setFont('helvetica', 'bold');
-      doc.text('Iss. DateTime:', 3, 77);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${formattedDate} ${formattedTime}`, 29, 77);
-  
-      // Expected Out Date-Time
-      doc.setFont('helvetica', 'bold');
-      doc.text('Out DateTime:', 3, 84);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${formattedOutDate} ${formattedOutTime}`, 29, 84);
-  
-      // **NEW: Expected In Date-Time**
-      doc.setFont('helvetica', 'bold');
-      doc.text('In DateTime:', 3, 91);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${formattedInDate} ${formattedInTime}`, 29, 91);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Signature', 50, 109); 
-  
-      // Implementing PDF printing
-      const pdfBlob = doc.output('blob');
-      const url = URL.createObjectURL(pdfBlob);
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = url;
-      document.body.appendChild(iframe);
-      setTimeout(() => {
-        iframe.contentWindow.print();
-      }, 500);
-    } else {
-      alert("No user data to generate the Pink Pass.");
+      console.error(error);
+      setError('Fingerprint error');
+    } finally {
+      setLoading(false);
     }
   };
-  
- 
 
-  // Function to generate Pink Pass PDF
-  const generatePinkPassPDF1 = () => {
-    if (fingerprintData) {
-      const currentDate = new Date();
-      const formattedDate = currentDate.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-      const formattedTime = currentDate.toLocaleTimeString();
-  
-      const expectedOutDateTime = new Date(expectedOutTime);
-      const formattedOutDate = expectedOutDateTime.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-      const formattedOutTime = expectedOutDateTime.toLocaleTimeString();
-  
-      const expectedInDateTime = new Date(expectedInTime);
-      const formattedInDate = expectedInDateTime.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-      const formattedInTime = expectedInDateTime.toLocaleTimeString();
-  
-      const doc = new jsPDF({
-        unit: 'mm',
-        format: [80, 110],
-        margin: 0 // Remove margins
+  const handleSendQRCode = async (studentID, token) => {
+    try {
+      const response = await axios.post('http://82.29.162.24/send-qr-code', {
+        studentID,
+        token
       });
 
-
-// // Add the image to the PDF at the specified position (x, y) and size (width, height)
-// doc.addImage(base64image, 'JPEG', 15, 1, 40, 10); // Adjust position and size as needed
-
-
-// Header Section
-doc.setFontSize(10);
-doc.setFont('helvetica', 'bold'); // Bold font for header
-doc.text('GMR INSTITUTE OF TECHNOLOGY', 1.5, 16); // Adjusted to start near the left
-doc.setFontSize(8.5);
-doc.text('PINKPASS FOR HOSTLERS', 14, 21);
-doc.setFontSize(8);
-doc.setFont('helvetica', 'normal');
-doc.text('GMR Nagar, RAJAM-532 127,  1800-129-118', 5, 26);
-
-// Draw a line to divide the header from the data
-doc.line(2, 28, 75, 28); // Divider line
-
-// Student Information Section
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(9.5);
-doc.text('Student Name:', 3, 35);
-doc.setFont('helvetica', 'normal');
-doc.text(fingerprintData.sname?.toString() || '', 28.5, 35); // Ensure toString()
-
-doc.setFont('helvetica', 'bold');
-doc.text('Roll No:', 3, 42);
-doc.setFont('helvetica', 'normal');
-doc.text(fingerprintData.studentId?.toString() || '',  28.5, 42);
-
-// Display Branch and Year separately
-doc.setFont('helvetica', 'bold');
-doc.text('Branch:', 3, 49);
-doc.setFont('helvetica', 'normal');
-doc.text(fingerprintData.branch?.toString() || '',  28.5, 49);
-
-doc.setFont('helvetica', 'bold');
-doc.text('Year:', 3, 56);
-doc.setFont('helvetica', 'normal');
-doc.text(fingerprintData.syear?.toString() || '',  28.5, 56);
-
-doc.setFont('helvetica', 'bold');
-doc.text('Block Name:', 3, 63);
-doc.setFont('helvetica', 'normal');
-doc.text(fingerprintData.hostelblock?.toString() || '',  28.5, 63);
-
-doc.setFont('helvetica', 'bold');
-doc.text('Room No:', 3, 70);
-doc.setFont('helvetica', 'normal');
-doc.text(fingerprintData.roomno?.toString() || '',  28.5, 70);
-
-// Separate Out Time and Out Date
-doc.setFont('helvetica', 'bold');
-doc.text('Iss. DateTime: ', 3, 77);
-doc.setFont('helvetica', 'normal');
-doc.text(`${formattedDate} ${formattedTime}`?.toString() || '',  29, 77); // Display only time
-
-doc.setFont('helvetica', 'bold');
-doc.text('Out DateTime:', 3, 84);
-doc.setFont('helvetica', 'normal');
-doc.text(`${formattedDate} ${formattedTime}`?.toString() || '',  29, 84); // Display only time
-// doc.text(expectedOutTime?.toString() || '',  28.5, 84); // Display only date
-doc.setFont('helvetica', 'bold');
-doc.text('In DateTime:', 3, 91);
-doc.setFont('helvetica', 'normal');
-doc.text(`${formattedInDate} ${formattedInTime}`, 29, 91);
-
-doc.setFont('helvetica', 'bold');
-doc.text('Signature:', 50, 109);
-
-// Display only date
-
-// Note Section
-// doc.setFont('helvetica', 'italic');
-// doc.text('Note: Return to college by 8:30 PM.', 4, 93);
-
-// Implementing the PDF printing logic
-const pdfBlob = doc.output('blob');
-const url = URL.createObjectURL(pdfBlob);
-const iframe = document.createElement('iframe');
-iframe.style.display = 'none';
-iframe.src = url;
-document.body.appendChild(iframe);
-iframe.onload = function() {
-  iframe.contentWindow.print();
-};
-} else {
-alert("No user data to generate the Pinkpass.");
-}
+      if (response.data.success) {
+        enqueueSnackbar('QR code sent successfully!', { 
+          variant: 'success',
+          anchorOrigin: { vertical: 'top', horizontal: 'center' }
+        });
+      } else {
+        throw new Error(response.data.message || 'Failed to send QR code');
+      }
+    } catch (err) {
+      console.error('Error sending QR:', err);
+      enqueueSnackbar(err.message, { 
+        variant: 'error',
+        anchorOrigin: { vertical: 'top', horizontal: 'center' }
+      });
+      throw err;
+    }
   };
- 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="spinner border-t-4 border-gray-800 rounded-full w-16 h-16 animate-spin"></div>
-      </div>
-    );
 
-  }
- 
-  
   return (
     <div className="p-5">
       <h1 className="text-center text-2xl font-bold">PinkPass Generation</h1>
-      {/* <p className="text-center">Welcome to the Gate Pass Generation system.</p> */}
       
       <div className="button-container text-center mb-5">
-        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 hidden-mobile" onClick={handleVerifyFingerprint}>
-          Generate using Fingerprint
+        <button 
+          onClick={handleVerifyFingerprint}
+          disabled={loading}
+          className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 hidden-mobile"
+        >
+          {loading ? 'Processing...' : 'Verify Fingerprint'}
         </button>
-        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 ml-2" onClick={handleVerifyPinkPass}>
-          Generate using Roll Number
+        <button 
+          onClick={handleVerifyPinkPass}
+          disabled={loading}
+          className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 ml-2"
+        >
+          {loading ? 'Processing...' : 'Verify Roll Number'}
         </button>
       </div>
 
@@ -440,190 +156,60 @@ alert("No user data to generate the Pinkpass.");
         placeholder="Enter Roll Number" 
         className="border rounded w-full md:w-1/3 py-2 mx-auto mb-4 block mobile-padding"
       />
+
       <div className="mb-4">
-  <label htmlFor="expectedOutTime" className="block text-white text-center">
-    Enter Expected Out Date
-  </label>
-  <input
-    id="expectedOutTime"
-    type="datetime-local"
-    value={expectedOutTime || ""}
-    onChange={(e) => setExpectedOutTime(e.target.value)}
-    className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto block mobile-padding"
-  />
-</div>
+        <label className="block text-white text-center">
+          Expected Out Time
+          <input
+            type="datetime-local"
+            value={expectedOutTime}
+            onChange={(e) => setExpectedOutTime(e.target.value)}
+            className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto block mobile-padding"
+          />
+        </label>
+      </div>
 
-<div className="mb-4">
-  <label htmlFor="expectedInTime" className="block text-white text-center">
-    Enter Expected In Date
-  </label>
-  <input
-    id="expectedInTime"
-    type="datetime-local"
-    value={expectedInTime || ""}
-    onChange={(e) => setExpectedInTime(e.target.value)}
-    className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto block mobile-padding"
-  />
-</div>
+      <div className="mb-4">
+        <label className="block text-white text-center">
+          Expected In Time
+          <input
+            type="datetime-local"
+            value={expectedInTime}
+            onChange={(e) => setExpectedInTime(e.target.value)}
+            className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto block mobile-padding"
+          />
+        </label>
+      </div>
 
+      {error && <p className="text-center bg-red-500 text-white p-2 rounded mx-auto max-w-md">{error}</p>}
 
-       {error && <p style={{
-            color: 'white',
-            textAlign: 'center',
-            backgroundColor: 'red',
-            opacity:0.7,
-            fontWeight: 'bold',
-            fontSize: 'px',
-            padding: '8px',
-            borderRadius: '9px',
-            margin: '10px auto',
-            maxWidth: '400px',
-          }}
->{error}</p>}
-
-      {(!error) && fingerprintData && (
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-         
+      {(userData || fingerprintData) && (
+        <div className="mt-8">
           <div className="flex items-center bg-white shadow-md p-6 rounded-lg mx-auto" style={{ maxWidth: '800px' }}>
-                        {/* Image Section */}
-                        {fingerprintData.imageUrl ? (
-                            <img 
-                                src={fingerprintData.imageUrl} 
-                                alt="Student" 
-                                className="h-32 w-32 object-cover rounded mr-6" 
-                            />
-                        ) : (
-                            <span>No image available</span>
-                        )}
-                        {/* Details Section */}
-                        <div className="grid grid-cols-3 gap-x-8 gap-y-4">
-                            <div><strong>Name:</strong> {fingerprintData.sname}</div>
-                            <div><strong>Roll No:</strong> {fingerprintData.studentId}</div>
-                            <div><strong>Branch:</strong> {fingerprintData.branch}</div>
-                            <div><strong>Year:</strong> {fingerprintData.syear}</div>
-                           
-                            <div><strong>Hostel Name:</strong> {fingerprintData.hostelblock}</div>
-                            <div><strong>Room No:</strong> {fingerprintData.roomno}</div>
-                            {/* <div><strong>Gatepass Count:</strong> {userData.gatepassCount}</div> */}
-                            <div><strong>Parent Mobile No:</strong> {fingerprintData.parentno}</div>
-                            
-                            <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
-                            <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
-                        </div>
-                    </div>
-                  
-          <br />
-          {/* <div style={{ margin: '20px 0' }}>
-            <strong className='text-white'>Outing Count for Current Month: {fingerprintData.gatepassCount}</strong>
-            {fingerprintData.gatepassCount > 4 && (
-                <button className="border border-white text-white font-semibold py-2 ml-4 px-4 rounded hover:bg-gray-900 transition duration-200">
-                    Get Permission
-                </button>
+            {(userData || fingerprintData).imageUrl ? (
+              <img 
+                src={(userData || fingerprintData).imageUrl} 
+                alt="Student" 
+                className="h-32 w-32 object-cover rounded mr-6" 
+              />
+            ) : (
+              <span>No image available</span>
             )}
-        </div> */}
-           <button className="bg-gray-900 text-white font-semibold py-2 px-4 rounded hover:bg-gray-700 transition duration-200 " onClick={generatePinkPassPDF1}>
-            Print Pink Pass
-          </button> 
-          {/* <button className="bg-gray-800 text-white font-semibold py-2 px-4 rounded hover:bg-gray-700 transition duration-200 ml-2" onClick={generateOutpassPDF1}>
-            Print Outpass
-          </button> */}
+            
+            <div className="grid grid-cols-3 gap-x-8 gap-y-4">
+              <div><strong>Name:</strong> {(userData || fingerprintData).sname}</div>
+              <div><strong>Roll No:</strong> {(userData || fingerprintData).studentId}</div>
+              <div><strong>Branch:</strong> {(userData || fingerprintData).branch}</div>
+              <div><strong>Year:</strong> {(userData || fingerprintData).syear}</div>
+              <div><strong>Hostel Name:</strong> {(userData || fingerprintData).hostelblock}</div>
+              <div><strong>Room No:</strong> {(userData || fingerprintData).roomno}</div>
+              <div><strong>Parent Mobile No:</strong> {(userData || fingerprintData).parentno}</div>
+              <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
+              <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
+            </div>
+          </div>
         </div>
       )}
-
-      
-      
-      {(!error) && userData &&  (
-    <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        
-        
-
-
-<div className="flex items-center bg-white shadow-md p-6 rounded-lg mx-auto" style={{ maxWidth: '800px' }}>
-                        {/* Image Section */}
-                        {userData.imageUrl ? (
-                            <img 
-                                src={userData.imageUrl} 
-                                alt="Student" 
-                                className="h-32 w-32 object-cover rounded mr-6" 
-                            />
-                        ) : (
-                            <span>No image available</span>
-                        )}
-                        {/* Details Section */}
-                        <div className="grid grid-cols-3 gap-x-8 gap-y-4">
-                            <div><strong>Name:</strong> {userData.sname}</div>
-                            <div><strong>Roll No:</strong> {userData.studentId}</div>
-                            <div><strong>Branch:</strong> {userData.branch}</div>
-                            <div><strong>Year:</strong> {userData.syear}</div>
-                           
-                            <div><strong>Hostel Name:</strong> {userData.hostelblock}</div>
-                            <div><strong>Room No:</strong> {userData.roomno}</div>
-                            {/* <div><strong>Gatepass Count:</strong> {userData.gatepassCount}</div> */}
-                            <div><strong>Parent Mobile No:</strong> {userData.parentno}</div>
-                            
-                            <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
-                            <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
-                        </div>
-                    </div>
-                  
-
-        <br />
-        
-        {/* Display Gatepass Count */}
-        {/* <div style={{ margin: '20px 0' }}>
-            <strong className='text-white'>Outing Count for Current Month: {userData.gatepassCount}</strong>
-            {userData.gatepassCount > 4 && (
-                <button className=" border border-white text-white font-semibold py-2 ml-4 px-4 rounded hover:bg-gray-900 transition duration-200">
-                    Get Permission
-                </button>
-            )}
-        </div> */}
-
-        {/* Print Buttons */}
-        <button className=" bg-gray-900 text-white font-semibold py-2 px-4 rounded hover:bg-gray-700 transition duration-200" onClick={generatePinkPassPDF}>
-            Print Pink Pass
-        </button> 
-        {/* <button className=" bg-gray-800 text-white font-semibold py-2 ml-3 px-4 rounded hover:bg-gray-700 transition duration-200" onClick={generateOutpassPDF}>
-            Print Outpass
-        </button> */}
-    </div>
-)}
-      {error1 && <p style={{
-            color: 'white',
-            textAlign: 'center',
-            backgroundColor: 'red',
-            opacity:0.7,
-            fontWeight: 'bold',
-            fontSize: 'px',
-            padding: '8px',
-            borderRadius: '9px',
-            margin: '10px auto',
-            maxWidth: '400px',
-          }}
->{error1}</p>}
-
-<style jsx>{`
-        @media (max-width: 600px) {
-          .hidden-mobile {
-            display: none;
-          }
-          .mobile-padding {
-            width: calc(100% - 32px); /* Subtract left and right padding from full width */
-            margin-left: auto;
-      margin-right: auto;
-            padding-left: 20px; /* Adjust as needed */
-            padding-right: 20px; /* Adjust as needed */
-          }
-          .button-container {
-            flex-direction: column;
-          }
-          .button-container button {
-            margin-left: 15px;
-            margin-top: 10px;
-            margin-right: 15px;
-          }
-        }
-      `}</style>
     </div>
   );
 };
