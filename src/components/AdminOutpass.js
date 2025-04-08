@@ -72,24 +72,33 @@ const AdminOutpass = () => {
 
   const handleVerifyFingerprint = async () => {
     setUserData(null);
+    setFingerprintData(null);
+    setError('');
+    
     try {
-      const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
-      const data = response.data;
-
-      if (data && Object.keys(data).length > 0) {
-        // Generate a new token
+        // Generate token first
         const newToken = generateToken();
         setToken(newToken);
+
+        // Call local bridge server
+        const response = await axios.post('http://localhost:3301/run-jar-verify', {
+            token: newToken // Pass token if needed
+        });
+
+        if (response.data.error) {
+            throw new Error(response.data.error);
+        }
+
+        setFingerprintData(response.data);
+        await updateGatepass(response.data.studentId, newToken);
         
-        setFingerprintData(data);
-        await updateGatepass(data.studentId, newToken);
-      } else {
-        alert("No user found.");
-      }
     } catch (error) {
-      console.error('Error running JAR:', error);
+        console.error('Fingerprint error:', error);
+        enqueueSnackbar(error.message || "Fingerprint verification failed", { 
+            variant: 'error' 
+        });
     }
-  };
+};
 
   const handleSendQRCode = async () => {
     const studentID = userData ? userData.studentId : fingerprintData?.studentId;
