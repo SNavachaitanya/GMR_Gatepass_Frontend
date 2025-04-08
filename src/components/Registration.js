@@ -90,24 +90,24 @@ const Registration = ({ type }) => {
           enqueueSnackbar('Registration failed. Please try again.', { variant: 'error' });
       }
   };
-const handleAddFingerprint = async () => {
-  try {
-      const response = await axios.post('http://82.29.162.24:3300/run-jar');
-      const data = response.data;
-
-      if (data.length > 0) {
-          setUserData(data[0]);
-          enqueueSnackbar("Fingerprint added successfully.", { variant: 'success' });
-      } else {
-          // enqueueSnackbar("No user found.", { variant: 'warning' });
-      }
-  } catch (error) {
-      console.error('Error running JAR:', error);
-      // enqueueSnackbar("Fingerprint added successfully.", { variant: 'success' });
-
-      // enqueueSnackbar('Error occurred while adding fingerprint.', { variant: 'error' });
-  }
-};
+  const handleAddFingerprint = async () => {
+    try {
+        const response = await axios.post('http://localhost:3301/run-jar');
+        
+        if (response.data.error) {
+            throw new Error(response.data.error);
+        }
+  
+        setUserData(response.data);
+        enqueueSnackbar("Fingerprint added successfully!", { variant: 'success' });
+    } catch (error) {
+        console.error('Fingerprint error:', error);
+        enqueueSnackbar(error.message || "Fingerprint enrollment failed", { 
+            variant: 'error' 
+        });
+    }
+  };
+  
 
 const handleVerifyRollNo = async () => {
   try {
@@ -174,19 +174,19 @@ const handleUpdateUser = async (e) => {
 };
 const handleUpdateFingerprint = async () => {
   try {
-      const response = await axios.post('http://82.29.162.24:3300/run-jar-update');
-      const data = response.data;
-
-      if (data.length > 0) {
-          setUserData(data[0]);
-          enqueueSnackbar("Fingerprint updated successfully.", { variant: 'success' });
-      } else {
-          enqueueSnackbar("No user found.", { variant: 'warning' });
+      const response = await axios.post('http://localhost:3301/run-jar-update');
+      
+      if (response.data.error) {
+          throw new Error(response.data.error);
       }
+
+      setUserData(response.data);
+      enqueueSnackbar("Fingerprint updated successfully!", { variant: 'success' });
   } catch (error) {
-      console.error('Error running JAR:', error);
-      // enqueueSnackbar("Fingerprint updated successfully.", { variant: 'success' });
-      // enqueueSnackbar('Error occurred jfhiofhi4fhi while updating fingerprint.', { variant: 'error' });
+      console.error('Fingerprint error:', error);
+      enqueueSnackbar(error.message || "Fingerprint update failed", { 
+          variant: 'error' 
+      });
   }
 };
 
