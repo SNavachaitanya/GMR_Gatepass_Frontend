@@ -35,7 +35,7 @@ const AdminPass = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://82.29.162.24/verify-roll/${rollNo}`);
+      const response = await fetch(`http://82.29.162.24:3300/verify-roll/${rollNo}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -54,7 +54,7 @@ const AdminPass = () => {
 
   const updateGatepassIssue = async (rollNo, outTime, inTime, token) => {
     try {
-      const response = await axios.post('http://82.29.162.24/update-gatepass-issue', {
+      const response = await axios.post('http://82.29.162.24:3300/update-gatepass-issue', {
         roll_no: rollNo,
         expected_out_time: new Date(outTime).toISOString(),
         expected_in_time: new Date(inTime).toISOString(),
@@ -82,7 +82,7 @@ const AdminPass = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://82.29.162.24/run-jar-verify');
+      const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
       const data = response.data;
 
       if (data?.studentId) {
@@ -105,7 +105,7 @@ const AdminPass = () => {
 
   const handleSendQRCode = async (studentID, token) => {
     try {
-      const response = await axios.post('http://82.29.162.24/send-qr-code', {
+      const response = await axios.post('http://82.29.162.24:3300/send-qr-code', {
         studentID,
         token
       });

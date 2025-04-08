@@ -10,7 +10,7 @@ const Checkingate = () => {
 
   const sendSMS = async (parentno) => {
     try {
-      await axios.post('http://82.29.162.24/send-sms-in', {
+      await axios.post('http://82.29.162.24:3300/send-sms-in', {
         message: `Your ward has checked in at ${new Date().toLocaleTimeString()}`
       });
       enqueueSnackbar('SMS Sent Successfully!', { 
@@ -50,7 +50,7 @@ const Checkingate = () => {
 
       // Perform check-in with token
       const response = await axios.patch(
-        `http://82.29.162.24/checkin/${parsedData.studentID}`,
+        `http://82.29.162.24:3300/checkin/${parsedData.studentID}`,
         { token: parsedData.token }
       );
 

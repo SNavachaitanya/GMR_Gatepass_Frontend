@@ -29,7 +29,7 @@ const AdminOutpass = () => {
     setToken(newToken);
 
     try {
-      const response = await fetch(`http://82.29.162.24/verify-roll-outpass/${rollNo}`);
+      const response = await fetch(`http://82.29.162.24:3300/verify-roll-outpass/${rollNo}`);
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
@@ -51,7 +51,7 @@ const AdminOutpass = () => {
 
   const updateGatepass = async (rollNo, token) => {
     try {
-      const response = await fetch(`http://82.29.162.24/update-outpass-admin`, {
+      const response = await fetch(`http://82.29.162.24:3300/update-outpass-admin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ const AdminOutpass = () => {
   const handleVerifyFingerprint = async () => {
     setUserData(null);
     try {
-      const response = await axios.post('http://82.29.162.24/run-jar-verify');
+      const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
       const data = response.data;
 
       if (data && Object.keys(data).length > 0) {
@@ -99,7 +99,7 @@ const AdminOutpass = () => {
     }
 
     try {
-      const response = await axios.post(`http://82.29.162.24/send-qr-code`, {
+      const response = await axios.post(`http://82.29.162.24:3300/send-qr-code`, {
         studentID,
         token: token // Include the token in the request
       });

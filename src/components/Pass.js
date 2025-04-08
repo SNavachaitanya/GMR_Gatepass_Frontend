@@ -32,7 +32,7 @@ const Pass = () => {
         throw new Error('Invalid QR code format');
       }
 
-      const response = await axios.post('http://82.29.162.24/update-gatepass', {
+      const response = await axios.post('http://82.29.162.24:3300/update-gatepass', {
         qr_data: parsedData
       });
 
@@ -63,7 +63,7 @@ const Pass = () => {
 
   const sendSMS = async (parentno) => {
     try {
-      await axios.post('http://82.29.162.24/send-sms-pink', {
+      await axios.post('http://82.29.162.24:3300/send-sms-pink', {
         message: `Your ward has checked out at ${new Date().toLocaleTimeString()}`
       });
     } catch (error) {

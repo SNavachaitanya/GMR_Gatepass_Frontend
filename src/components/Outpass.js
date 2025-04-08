@@ -32,7 +32,7 @@ const Outpass = () => {
     setToken(newToken);
 
     try {
-      const response = await fetch(`http://82.29.162.24/verify-roll-outpass/${rollNo}`);
+      const response = await fetch(`http://82.29.162.24:3300/verify-roll-outpass/${rollNo}`);
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
@@ -58,7 +58,7 @@ const Outpass = () => {
   const handleVerifyFingerprint = async () => {
     setUserData(null);
     try {
-      const response = await axios.post('http://82.29.162.24/run-jar-verify');
+      const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
       const data = response.data;
 
       // Assuming data is the student object now
@@ -80,7 +80,7 @@ const Outpass = () => {
   // Function to update gatepass with token
   const updateGatepass = async (rollNo, parentno, token) => {
     try {
-      const response = await fetch(`http://82.29.162.24/update-outpass-guard`, {
+      const response = await fetch(`http://82.29.162.24:3300/update-outpass-guard`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ const Outpass = () => {
     }
 
     try {
-      const response = await axios.post('http://82.29.162.24/send-qr-code', {
+      const response = await axios.post('http://82.29.162.24:3300/send-qr-code', {
         studentID,
         token: token // Include the token here
       });

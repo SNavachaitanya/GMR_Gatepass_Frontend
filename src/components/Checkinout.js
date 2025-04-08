@@ -20,7 +20,7 @@ const Checkinout = () => {
   // Function to send SMS
   const sendSMS = async (message) => {
     try {
-      const response = await axios.post('http://82.29.162.24/send-sms-in', {
+      const response = await axios.post('http://82.29.162.24:3300/send-sms-in', {
         message: message,
       });
       if (response.data.success) {
@@ -53,7 +53,7 @@ const Checkinout = () => {
     }
 
     try {
-      const response = await fetch(`http://82.29.162.24/checkin-out/${parsedData.studentID}`, {
+      const response = await fetch(`http://82.29.162.24:3300/checkin-out/${parsedData.studentID}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
