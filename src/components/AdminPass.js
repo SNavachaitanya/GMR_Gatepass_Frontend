@@ -82,7 +82,7 @@ const AdminPass = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://82.29.162.24:3300/run-jar-verify');
+      const response = await axios.post('http://localhost:3301/run-jar-verify');
       const data = response.data;
 
       if (data?.studentId) {
