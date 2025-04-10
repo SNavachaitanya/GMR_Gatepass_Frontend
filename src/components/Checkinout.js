@@ -44,11 +44,11 @@ const Checkinout = () => {
     
     if (!parsedData || !parsedData.studentID || !parsedData.token) {
       setError('Invalid QR code format. Please scan a valid QR code.');
-      enqueueSnackbar('Invalid QR code format. Please scan a valid QR code.', {
-        variant: 'warning',
-        anchorOrigin: { vertical: 'top', horizontal: 'center' },
-        autoHideDuration: 3000,
-      });
+      // enqueueSnackbar('Invalid QR code format. Please scan a valid QR code.', {
+      //   variant: 'warning',
+      //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
+      //   autoHideDuration: 3000,
+      // });
       return;
     }
 
@@ -65,44 +65,44 @@ const Checkinout = () => {
         const data = await response.json();
         // sendSMS(data.parentno); // Uncomment to send SMS to parent
         setMessage('Check-in successful!');
-        enqueueSnackbar('Check-in successful!', {
-          variant: 'success',
-          anchorOrigin: { vertical: 'top', horizontal: 'center' },
-          autoHideDuration: 3000,
-        });
+        // enqueueSnackbar('Check-in successful!', {
+        //   // variant: 'success',
+        //   // anchorOrigin: { vertical: 'top', horizontal: 'center' },
+        //   // autoHideDuration: 3000,
+        // });
         setError('');
         setQrData(''); // Clear the input field after successful check-in
       } else if (response.status === 400) {
         const errorData = await response.json();
         setError(errorData.message || 'Invalid or expired QR code.');
-        enqueueSnackbar(errorData.message || 'Invalid or expired QR code.', {
-          variant: 'error',
-          anchorOrigin: { vertical: 'top', horizontal: 'center' },
-          autoHideDuration: 3000,
-        });
+        // enqueueSnackbar(errorData.message || 'Invalid or expired QR code.', {
+        //   // variant: 'error',
+        //   // anchorOrigin: { vertical: 'top', horizontal: 'center' },
+        //   // autoHideDuration: 3000,
+        // });
       } else if (response.status === 404) {
         setError('No pending checkout record found for this student.');
-        enqueueSnackbar('No pending checkout record found for this student.', {
-          variant: 'error',
-          anchorOrigin: { vertical: 'top', horizontal: 'center' },
-          autoHideDuration: 3000,
-        });
+        // enqueueSnackbar('No pending checkout record found for this student.', {
+        //   // variant: 'error',
+        //   // anchorOrigin: { vertical: 'top', horizontal: 'center' },
+        //   // autoHideDuration: 3000,
+        // });
       } else {
         setError('Check-in failed.');
-        enqueueSnackbar('Check-in failed.', {
-          variant: 'error',
-          anchorOrigin: { vertical: 'top', horizontal: 'center' },
-          autoHideDuration: 3000,
-        });
+        // enqueueSnackbar('Check-in failed.', {
+        //   // variant: 'error',
+        //   // anchorOrigin: { vertical: 'top', horizontal: 'center' },
+        //   // autoHideDuration: 3000,
+        // });
       }
     } catch (err) {
       console.error('Error during check-in:', err);
       setError('Server error occurred during check-in.');
-      enqueueSnackbar('Server error occurred during check-in.', {
-        variant: 'error',
-        anchorOrigin: { vertical: 'top', horizontal: 'center' },
-        autoHideDuration: 3000,
-      });
+      // enqueueSnackbar('Server error occurred during check-in.', {
+        // variant: 'error',
+        // anchorOrigin: { vertical: 'top', horizontal: 'center' },
+        // autoHideDuration: 3000,
+      // });
     }
   };
 
@@ -116,7 +116,7 @@ const Checkinout = () => {
 
   return (
     <div style={{ textAlign: 'center', marginTop: '20px' }}>
-      <h1 className="text-center text-2xl font-bold">Check-in for Outpass</h1>
+      <h1 className="text-center text-2xl font-bold">Checkin for Outpass</h1>
 
       {/* Input field for QR code scanning */}
       <input

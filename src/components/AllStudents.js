@@ -84,11 +84,10 @@ const handleInputChange = (e) => {
         setLoading(true);
         console.log("📡 Sending API Request with filters:", { gender, blockName }); // Log Request Data
         try {
-            console.log("🔵 Sending Filters to Backend:", { gender, blockName });
+            console.log("Sending Filters to Backend:", { gender, blockName });
             const response = await axios.get('http://82.29.162.24:3300/students-filtered', {
                 params: { gender, blockName} 
             });
-            console.log("🟢 Response from Backend:", response.data);
             setStudents(response.data);
             setCurrentPage(1);
         } catch (error) {

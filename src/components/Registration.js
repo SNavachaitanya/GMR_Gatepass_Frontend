@@ -92,7 +92,7 @@ const Registration = ({ type }) => {
   };
   const handleAddFingerprint = async () => {
     try {
-        const response = await axios.post('http://localhost:3301/run-jar');
+        const response = await axios.post('http://82.29.162.24:3301/run-jar');
         
         if (response.data.error) {
             throw new Error(response.data.error);
@@ -174,7 +174,7 @@ const handleUpdateUser = async (e) => {
 };
 const handleUpdateFingerprint = async () => {
   try {
-      const response = await axios.post('http://localhost:3301/run-jar-update');
+      const response = await axios.post('http://82.29.162.24:3301/run-jar-update');
       
       if (response.data.error) {
           throw new Error(response.data.error);

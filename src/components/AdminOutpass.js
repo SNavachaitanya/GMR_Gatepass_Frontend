@@ -62,7 +62,8 @@ const AdminOutpass = () => {
       if (!response.ok) {
         setError(data.message);
       } else {
-        enqueueSnackbar('Outpass generated successfully!', { variant: 'success' });
+        // enqueueSnackbar('Outpass generated successfully!', { variant: 'success' });
+        await handleSendQRCode(rollNo,token);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -81,7 +82,7 @@ const AdminOutpass = () => {
         setToken(newToken);
 
         // Call local bridge server
-        const response = await axios.post('http://localhost:3301/run-jar-verify', {
+        const response = await axios.post('http://82.29.162.24:3301/run-jar-verify', {
             token: newToken // Pass token if needed
         });
 
@@ -100,8 +101,8 @@ const AdminOutpass = () => {
     }
 };
 
-  const handleSendQRCode = async () => {
-    const studentID = userData ? userData.studentId : fingerprintData?.studentId;
+  const handleSendQRCode = async (studentID,token) => {
+    // const studentID = userData ? userData.studentId : fingerprintData?.studentId;
     if (!studentID) {
       setError('No student ID found.');
       return;
@@ -126,7 +127,7 @@ const AdminOutpass = () => {
 
   return (
     <div className="p-5">
-      <h1 className="text-center text-white text-2xl font-bold">Admin OutPass Generation</h1>
+      <h1 className="text-center text-white text-2xl font-bold">OutPass Generation</h1>
       
       <div className="button-container text-center mb-5">
         <button 
@@ -151,13 +152,21 @@ const AdminOutpass = () => {
         className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto mb-4 block mobile-padding"
       />
 
-      {error && (
-        <p className="text-center bg-red-500 text-white p-2 rounded mx-auto max-w-md">
-          {error}
-        </p>
-      )}
+{error && <p style={{
+            color: 'white',
+            textAlign: 'center',
+            backgroundColor: 'red',
+            opacity:0.7,
+            fontWeight: 'bold',
+            fontSize: 'px',
+            padding: '8px',
+            borderRadius: '9px',
+            margin: '10px auto',
+            maxWidth: '400px',
+          }}
+>{error}</p>}
 
-      {(userData || fingerprintData) && (
+      {(!error) && (userData || fingerprintData) && (
         <div className="mt-8">
           <div className="flex items-center bg-white shadow-md p-6 rounded-lg mx-auto" style={{ maxWidth: '800px' }}>
             {userData?.imageUrl || fingerprintData?.imageUrl ? (
@@ -184,12 +193,12 @@ const AdminOutpass = () => {
           </div>
           
           <div className="text-center mt-4">
-            <button
+            {/* <button
               className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
               onClick={handleSendQRCode}
             >
               Send QR Code
-            </button>
+            </button> */}
           </div>
         </div>
       )}

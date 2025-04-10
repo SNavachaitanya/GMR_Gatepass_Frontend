@@ -40,6 +40,8 @@ const Outpass = () => {
 
         // After fetching user data, update the gatepass table with the token
         await updateGatepass(rollNo, data.parentno, newToken);
+        // Automatically send QR code after verification
+        // await handleSendQRCode();
       } else if (response.status === 404) {
         setError('User not found');
         setUserData(null);
@@ -58,7 +60,7 @@ const Outpass = () => {
   const handleVerifyFingerprint = async () => {
     setUserData(null);
     try {
-      const response = await axios.post('http://localhost:3301/run-jar-verify');
+      const response = await axios.post('http://82.29.162.24:3301/run-jar-verify');
       const data = response.data;
 
       // Assuming data is the student object now
@@ -69,6 +71,8 @@ const Outpass = () => {
         
         setFingerprintData(data); // Set the entire student data
         await updateGatepass(data.studentId, data.parentno, newToken); // Use data.studentId
+        // Automatically send QR code after verification
+        // await handleSendQRCode();
       } else {
         alert('No user found.');
       }
@@ -92,6 +96,7 @@ const Outpass = () => {
         setError(data.message);
         console.error('Error updating out pass:', data.message);
       } else {
+        await handleSendQRCode(rollNo,token);
         console.log('Gate pass updated successfully.');
         setExpectedOutTime(data.expectedOutTime);
       }
@@ -101,8 +106,8 @@ const Outpass = () => {
   };
 
   // Function to send QR code via email with token
-  const handleSendQRCode = async () => {
-    const studentID = userData ? userData.studentId : fingerprintData?.studentId;
+  const handleSendQRCode = async (studentID,token) => {
+    // const studentID = userData ? userData.studentId : fingerprintData?.studentId;
     if (!studentID) {
       setError('No student ID found.');
       return;
@@ -197,12 +202,12 @@ const Outpass = () => {
             </div>
           </div>
           <br />
-          <button
+          {/* <button
             className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
             onClick={handleSendQRCode}
           >
             Send QR Code
-          </button>
+          </button> */}
         </div>
       )}
 
