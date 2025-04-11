@@ -60,7 +60,7 @@ const Outpass = () => {
   const handleVerifyFingerprint = async () => {
     setUserData(null);
     try {
-      const response = await axios.post('http://82.29.162.24:3301/run-jar-verify');
+      const response = await axios.post('http://localhost:3301/run-jar-verify');
       const data = response.data;
 
       // Assuming data is the student object now

@@ -82,7 +82,7 @@ const AdminOutpass = () => {
         setToken(newToken);
 
         // Call local bridge server
-        const response = await axios.post('http://82.29.162.24:3301/run-jar-verify', {
+        const response = await axios.post('http://localhost:3301/run-jar-verify', {
             token: newToken // Pass token if needed
         });
 
