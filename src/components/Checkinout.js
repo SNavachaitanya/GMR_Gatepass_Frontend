@@ -29,37 +29,30 @@ const Checkinout = () => {
   const handleFingerprintVerify = async () => {
     setError('');
     setMessage('');
+    
     try {
-      const response = await fetch('http://localhost:3301/run-jar-verify-checkin-out', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // sendSMS(data.parentno);
-        setMessage('Student check-in successful!');
-        // enqueueSnackbar('Check-in successful!', { 
-        //   variant: 'success', 
-        //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
-        //   autoHideDuration: 3000 
-        // });
-      } else {
-        setError('Fingerprint verification failed.');
-        // enqueueSnackbar('Fingerprint verification failed.', { 
-        //   variant: 'error', 
-        //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
-        //   autoHideDuration: 3000 
-        // });
+      const response = await axios.post('http://localhost:3301/run-jar-verify-checkin-out');
+      
+      if (response.data.error) {
+        throw new Error(response.data.error);
       }
-    } catch (err) {
-      console.error('Error verifying fingerprint:', err);
-      setError('Server error occurred during fingerprint verification.');
-      // enqueueSnackbar('Server error occurred during fingerprint verification.', { 
-      //   variant: 'error', 
-      //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
-      //   autoHideDuration: 3000 
-      // });
+  
+      setMessage('Student check-in successful!');
+      enqueueSnackbar('Check-in recorded successfully!', { 
+        variant: 'success',
+        anchorOrigin: { vertical: 'top', horizontal: 'center' }
+      });
+  
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || error.message;
+      setError(errorMsg.includes('No pending') 
+        ? "No pending outpass found (student hasn't checked out yet)"
+        : "Fingerprint verification failed");
+      
+      enqueueSnackbar(errorMsg, { 
+        variant: 'error',
+        anchorOrigin: { vertical: 'top', horizontal: 'center' }
+      });
     }
   };
 
