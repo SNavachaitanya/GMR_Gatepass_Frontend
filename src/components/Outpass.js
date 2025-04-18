@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import './styles/Pass.css'; // Ensure you import the CSS file for styling
+import './styles/Pass.css';
 import axios from 'axios';
-import { useSnackbar } from 'notistack'; // For notifications
+import { useSnackbar } from 'notistack';
 
 const Outpass = () => {
   const [rollNo, setRollNo] = useState('');
@@ -10,15 +10,8 @@ const Outpass = () => {
   const [error, setError] = useState('');
   const [error1, setError1] = useState('');
   const [expectedOutTime, setExpectedOutTime] = useState('');
-  const [token, setToken] = useState('');
   const { enqueueSnackbar } = useSnackbar();
 
-  // Function to generate random token
-  const generateToken = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
-
-  // Function to verify and fetch full data for Outpass
   const handleVerifyPinkPass = async () => {
     setFingerprintData(null);
     setError1(null);
@@ -27,21 +20,13 @@ const Outpass = () => {
       return;
     }
 
-    // Generate a new token
-    const newToken = generateToken();
-    setToken(newToken);
-
     try {
       const response = await fetch(`http://82.29.162.24:3300/verify-roll-outpass/${rollNo}`);
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
-        setError(''); // Clear error
-
-        // After fetching user data, update the gatepass table with the token
-        await updateGatepass(rollNo, data.parentno, newToken);
-        // Automatically send QR code after verification
-        // await handleSendQRCode();
+        setError('');
+        await updateGatepass(rollNo, data.parentno);
       } else if (response.status === 404) {
         setError('User not found');
         setUserData(null);
@@ -56,23 +41,15 @@ const Outpass = () => {
     }
   };
 
-  // Function to verify fingerprint
   const handleVerifyFingerprint = async () => {
     setUserData(null);
     try {
       const response = await axios.post('http://localhost:3301/run-jar-verify');
       const data = response.data;
 
-      // Assuming data is the student object now
       if (data && Object.keys(data).length > 0) {
-        // Generate a new token
-        const newToken = generateToken();
-        setToken(newToken);
-        
-        setFingerprintData(data); // Set the entire student data
-        await updateGatepass(data.studentId, data.parentno, newToken); // Use data.studentId
-        // Automatically send QR code after verification
-        // await handleSendQRCode();
+        setFingerprintData(data);
+        await updateGatepass(data.studentId, data.parentno);
       } else {
         alert('No user found.');
       }
@@ -81,58 +58,63 @@ const Outpass = () => {
     }
   };
 
-  // Function to update gatepass with token
-  const updateGatepass = async (rollNo, parentno, token) => {
+  const updateGatepass = async (rollNo, parentno) => {
     try {
       const response = await fetch(`http://82.29.162.24:3300/update-outpass-guard`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ roll_no: rollNo, token: token }),
+        body: JSON.stringify({ roll_no: rollNo }),
       });
       const data = await response.json();
       if (!response.ok) {
         setError(data.message);
         console.error('Error updating out pass:', data.message);
       } else {
-        await handleSendQRCode(rollNo,token);
         console.log('Gate pass updated successfully.');
         setExpectedOutTime(data.expectedOutTime);
+        await handleSendOutpassEmail(rollNo);
       }
     } catch (err) {
       console.error('Error:', err);
     }
   };
 
-  // Function to send QR code via email with token
-  const handleSendQRCode = async (studentID,token) => {
-    // const studentID = userData ? userData.studentId : fingerprintData?.studentId;
+  const handleSendOutpassEmail = async (studentID) => {
     if (!studentID) {
       setError('No student ID found.');
       return;
     }
 
     try {
-      const response = await axios.post('http://82.29.162.24:3300/send-qr-code', {
-        studentID,
-        token: token // Include the token here
+      const response = await axios.post(`http://82.29.162.24:3300/send-outpass-email`, {
+        studentID
       });
 
       if (response.data.success) {
-        enqueueSnackbar('QR code sent successfully!', { variant: 'success' });
+        enqueueSnackbar('Outpass details sent to student email!', { variant: 'success' });
       } else {
-        enqueueSnackbar('Failed to send QR code.', { variant: 'error' });
+        enqueueSnackbar(response.data.message || 'Failed to send outpass details.', { 
+          variant: 'error' 
+        });
       }
     } catch (err) {
-      console.error('Error sending QR code:', err);
-      enqueueSnackbar('Error sending QR code.', { variant: 'error' });
+      console.error('Error sending outpass details:', err);
+      let errorMessage = 'Error sending email';
+      if (err.response) {
+        errorMessage = err.response.data.message || `Server error: ${err.response.status}`;
+      } else if (err.request) {
+        errorMessage = 'No response from server. Check connection.';
+      }
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     }
   };
 
   return (
     <div className="p-5">
       <h1 className="text-center text-white text-2xl font-bold">OutPass Generation</h1>
+      
       <div className="button-container text-center mb-5">
         <button
           className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 hidden-mobile"
@@ -175,77 +157,54 @@ const Outpass = () => {
         </p>
       )}
 
-      {(!error && userData) && (
+      {(!error && (userData || fingerprintData)) && (
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
           <div className="flex items-center bg-white shadow-md p-6 rounded-lg mx-auto" style={{ maxWidth: '800px' }}>
-            {/* Image Section */}
-            {userData.imageUrl ? (
+            {(userData?.imageUrl || fingerprintData?.imageUrl) ? (
               <img
-                src={userData.imageUrl}
+                src={(userData || fingerprintData).imageUrl}
                 alt="Student"
                 className="h-32 w-32 object-cover rounded mr-6"
               />
             ) : (
               <span>No image available</span>
             )}
-            {/* Details Section */}
             <div className="grid grid-cols-3 gap-x-8 gap-y-4">
-              <div><strong>Name:</strong> {userData.sname}</div>
-              <div><strong>Roll No:</strong> {userData.studentId}</div>
-              <div><strong>Branch:</strong> {userData.branch}</div>
-              <div><strong>Year:</strong> {userData.syear}</div>
-              <div><strong>Hostel Name:</strong> {userData.hostelblock}</div>
-              <div><strong>Room No:</strong> {userData.roomno}</div>
-              <div><strong>Parent Mobile No:</strong> {userData.parentno}</div>
+              <div><strong>Name:</strong> {(userData || fingerprintData).sname}</div>
+              <div><strong>Roll No:</strong> {(userData || fingerprintData).studentId}</div>
+              <div><strong>Branch:</strong> {(userData || fingerprintData).branch}</div>
+              <div><strong>Year:</strong> {(userData || fingerprintData).syear}</div>
+              <div><strong>Hostel Name:</strong> {(userData || fingerprintData).hostelblock}</div>
+              <div><strong>Room No:</strong> {(userData || fingerprintData).roomno}</div>
+              <div><strong>Parent Mobile No:</strong> {(userData || fingerprintData).parentno}</div>
               <div><strong>Date:</strong> {new Date().toLocaleDateString('en-GB')}</div>
               <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
             </div>
           </div>
-          <br />
-          {/* <button
-            className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
-            onClick={handleSendQRCode}
-          >
-            Send QR Code
-          </button> */}
         </div>
       )}
 
-      {(!error && fingerprintData) && (
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <div className="flex items-center bg-white shadow-md p-6 rounded-lg mx-auto" style={{ maxWidth: '800px' }}>
-            {/* Image Section */}
-            {fingerprintData.imageUrl ? (
-              <img
-                src={fingerprintData.imageUrl}
-                alt="Student"
-                className="h-32 w-32 object-cover rounded mr-6"
-              />
-            ) : (
-              <span>No image available</span>
-            )}
-            {/* Details Section */}
-            <div className="grid grid-cols-3 gap-x-8 gap-y-4">
-              <div><strong>Name:</strong> {fingerprintData.sname}</div>
-              <div><strong>Roll No:</strong> {fingerprintData.studentId}</div>
-              <div><strong>Branch:</strong> {fingerprintData.branch}</div>
-              <div><strong>Year:</strong> {fingerprintData.syear}</div>
-              <div><strong>Hostel Name:</strong> {fingerprintData.hostelblock}</div>
-              <div><strong>Room No:</strong> {fingerprintData.roomno}</div>
-              <div><strong>Parent Mobile No:</strong> {fingerprintData.parentno}</div>
-              <div><strong>Date:</strong> {new Date().toLocaleDateString('en-GB')}</div>
-              <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
-            </div>
-          </div>
-          <br />
-          <button
-            className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
-            onClick={handleSendQRCode}
-          >
-            Send QR Code
-          </button>
-        </div>
-      )}
+      <style jsx>{`
+        @media (max-width: 600px) {
+          .hidden-mobile {
+            display: none;
+          }
+          .mobile-padding {
+            width: calc(100% - 32px);
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 20px;
+            padding-right: 20px;
+          }
+          .button-container {
+            flex-direction: column;
+          }
+          .button-container button {
+            margin-left: 0;
+            margin-top: 10px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

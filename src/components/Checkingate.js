@@ -1,124 +1,160 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-
 const Checkingate = () => {
-  const [qrData, setQrData] = useState('');
+  const [rollNo, setRollNo] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const { enqueueSnackbar } = useSnackbar();
+  const {enqueueSnackbar} = useSnackbar();
 
-  const sendSMS = async (message) => {
+
+
+
+  const sendSMS = async ( message) => {
     try {
-      const response = await axios.post('http://82.29.162.24:3300/send-sms-in', {
-         
-          message: message
-      });
-      if (response.data.success) {
-          console.log('SMS sent Successfully!');
-          enqueueSnackbar('SMS Sent Successfully!', { variant: 'success' });
-      } else {
-          console.error('Failed to send SMS:', response.data.message);
-          enqueueSnackbar('SMS not Sent !', { variant: 'error' });
-      }
-  } catch (error) {
-      console.error('Error sending SMS:', error);
-  }
+        const response = await axios.post('http://82.29.162.24:3300/send-sms-in', {
+           
+            message: message
+        });
+        if (response.data.success) {
+            console.log('SMS sent Successfully!');
+            enqueueSnackbar('SMS Sent Successfully!', { variant: 'success' });
+        } else {
+            console.error('Failed to send SMS:', response.data.message);
+            enqueueSnackbar('SMS not Sent !', { variant: 'error' });
+        }
+    } catch (error) {
+        console.error('Error sending SMS:', error);
+    }
+};
+  // Function to verify fingerprint independently
+  const handleFingerprintVerify = async () => {
+    setError('');
+    setMessage('');
+    
+    try {
+        const response = await axios.post('http://localhost:3301/run-jar-verify-checkin');
+        
+        if (response.data.error) {
+            throw new Error(response.data.error);
+        }
+
+        // Send SMS to parent
+        await sendSMS(response.data.parentno);
+        
+        enqueueSnackbar('Check-in successful!', { 
+            variant: 'success',
+            anchorOrigin: { vertical: 'top', horizontal: 'center' }
+        });
+    } catch (error) {
+        const errorMsg = error.response?.data?.error || error.message;
+        setError(errorMsg);
+        enqueueSnackbar(errorMsg, { 
+            variant: 'error',
+            anchorOrigin: { vertical: 'top', horizontal: 'center' }
+        });
+    }
 };
 
+  // Function to check in with roll number
   const handleCheckIn = async () => {
+    setMessage('');
     setError('');
-    setLoading(true);
-
-    if (!qrData.trim()) {
-      setError('Please scan a valid QR code');
-      setLoading(false);
+    if (rollNo.trim() === '') {
+      setError('Please enter a valid Roll Number.');
       return;
     }
 
     try {
-      // Parse QR code data (should contain studentID and token)
-      let parsedData;
-      try {
-        parsedData = JSON.parse(qrData);
-        if (!parsedData.studentID || !parsedData.token) {
-          throw new Error('Invalid QR code format');
-        }
-      } catch (e) {
-        throw new Error('Invalid QR code format');
-      }
-
-      // Perform check-in with token
-      const response = await axios.patch(
-        `http://82.29.162.24:3300/checkin/${parsedData.studentID}`,
-        { token: parsedData.token }
-      );
-
-      // Clear input after successful check-in
-      setQrData('');
-      
-      // Send SMS notification
-      if (response.data.parentno) {
-        await sendSMS(response.data.parentno);
-
-      enqueueSnackbar('Check-in successful!', {
-        variant: 'success',
-        anchorOrigin: { vertical: 'top', horizontal: 'center' }
+      const response = await fetch(`http://82.29.162.24:3300/checkin/${rollNo}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-    }
-      else if (response.status === 404) {
+
+      if (response.ok) {
+        const data = await response.json();
+        sendSMS(data.parentno);
+        setMessage('Check-in successful! ');
+        // enqueueSnackbar('Check-in successful!', { 
+        //   variant: 'success', 
+        //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
+        //   autoHideDuration: 3000 
+        // });
+        setError('');
+      } else if (response.status === 404) {
         setError('No pending checkout record found for the roll number.');
-      }
-      else{
+        // enqueueSnackbar('No pending checkout record found for the roll number.', { 
+        //   variant: 'error', 
+        //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
+        //   autoHideDuration: 3000 
+        // });
+      } else {
         setError('Check-in failed.');
+        // enqueueSnackbar('Check-in failed.', { 
+        //   variant: 'error', 
+        //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
+        //   autoHideDuration: 3000 
+        // });
       }
-    }
-     catch (err) {
-      console.error('Error:', err);
-      setError(err.response?.data?.message || err.message || 'Check-in failed');
-      // enqueueSnackbar(err.message, {
-      //   variant: 'error',
-      //   anchorOrigin: { vertical: 'top', horizontal: 'center' }
+    } catch (err) {
+      console.error('Error during check-in:', err);
+      setError('Server error occurred during check-in.');
+      // enqueueSnackbar('Server error occurred during check-in.', { 
+      //   variant: 'error', 
+      //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
+      //   autoHideDuration: 3000 
       // });
-    } finally {
-      setLoading(false);
     }
   };
 
-   // Automatically trigger handleCheckIn when qrData changes
-   useEffect(() => {
-    console.log("Scanned QR Data:", qrData);
-    if (qrData.trim() !== '') {
-      handleCheckIn(qrData);
-    }
-  }, [qrData]);
-
   return (
-    <div className="p-5">
-      <h1 className="text-center text-2xl font-bold mb-4">Checkin for Pinkpass</h1>
+    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+      {/* <h1>Check-in System</h1>
+      <div>
+        <button onClick={handleFingerprintVerify} className="register-button">
+          Verify Fingerprint
+        </button>
+      </div>
+      <div style={{ marginTop: '20px' }}>
+        <h3>Check-in via Roll Number</h3>
+        <input 
+          type="text" 
+          value={rollNo} 
+          onChange={(e) => setRollNo(e.target.value)} 
+          placeholder="Enter Roll Number" 
+        />
+        <button onClick={handleCheckIn} className="register-button" style={{ marginLeft: '10px' }}>
+          Check-in
+        </button>
+      </div> */}
+
+      <h1 className="text-center text-2xl font-bold">Checkin for Pinkpass</h1>
+      {/* <p className="text-center">Welcome to the Gate Pass Generation system.</p> */}
       
-      <div className="flex flex-col items-center">
-        <div className="w-full md:w-1/3 mb-4">
-          <input 
-            type="text" 
-            value={qrData} 
-            onChange={(e) => setQrData(e.target.value)} 
-            placeholder="Scan QR Code" 
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none"
-            autoFocus
-          />
-        </div>
+      <div className="button-container text-center mb-5">
+        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 hidden-mobile" onClick={handleFingerprintVerify}>
+          Verify Fingerprint
+        </button>
+        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 ml-2" onClick={handleCheckIn}>
+          Verify Roll Number
+        </button>
+      </div>
 
-        {/* <button 
-          onClick={handleCheckIn}
-          disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
-        >
-          {loading ? 'Processing...' : 'Check-in'}
-        </button> */}
+      <input 
+        type="text" 
+        value={rollNo} 
+        onChange={(e) => setRollNo(e.target.value)} 
+        placeholder="Enter Roll Number" 
+        className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto mb-4 block mobile-padding"
+        />
 
-        {error && <p style={{
+
+
+
+      {/* Display error or success message */}
+      {error && <p style={{
             color: 'white',
             textAlign: 'center',
             backgroundColor: 'red',
@@ -131,7 +167,41 @@ const Checkingate = () => {
             maxWidth: '400px',
           }}
 >{error}</p>}
-      </div>
+      {message && <p style={{
+            color: 'white',
+            textAlign: 'center',
+            backgroundColor: 'green',
+            opacity:0.7,
+            fontWeight: 'bold',
+            fontSize: 'px',
+            padding: '8px',
+            borderRadius: '9px',
+            margin: '10px auto',
+            maxWidth: '400px',
+          }}
+>{message}</p>}
+
+<style jsx>{`
+        @media (max-width: 600px) {
+          .hidden-mobile {
+            display: none;
+          }
+          .mobile-padding {
+            width: calc(100% - 32px); /* Subtract left and right padding from full width */
+            margin-left: auto;
+      margin-right: auto;
+            padding-left: 20px; /* Adjust as needed */
+            padding-right: 20px; /* Adjust as needed */
+          }
+          .button-container {
+            flex-direction: column;
+          }
+          .button-container button {
+            margin-left: 0;
+            margin-top: 10px;
+          }
+        }
+      `}</style>   
     </div>
   );
 };

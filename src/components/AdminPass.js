@@ -11,14 +11,7 @@ const AdminPass = () => {
   const [expectedOutTime, setExpectedOutTime] = useState('');
   const [expectedInTime, setExpectedInTime] = useState('');
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState('');
   const { enqueueSnackbar } = useSnackbar();
-
-  // Generate random token
-  const generateToken = () => {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
-  };
 
   const handleVerifyPinkPass = async () => {
     setFingerprintData(null);
@@ -29,88 +22,63 @@ const AdminPass = () => {
       return;
     }
 
-    if (rollNo.trim() === '') {
-      setError('Please enter a valid Roll Number.');
-      return;
-    }
-    if (expectedOutTime.trim() === '') {
-      setError('Please enter a valid Expected Out Time.');
-      return;
-    }
-    if (expectedInTime.trim() === '') {
-      setError('Please enter a valid Expected In Time.');
-      return;
-    }
-
-    // Generate token in frontend
-    const newToken = generateToken();
-    setToken(newToken);
-
     try {
-      // setLoading(true);
-      const response = await fetch(`http://82.29.162.24:3300/verify-roll/${rollNo}`);
       setLoading(true);
+      const response = await fetch(`http://82.29.162.24:3300/verify-roll/${rollNo}`);
+      
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
-        setLoading(false)
-
-        setError(''); // Clear error
-        await updateGatepassIssue(rollNo, expectedOutTime, expectedInTime, newToken);
+        setError('');
+        await updateGatepassIssue(rollNo, expectedOutTime, expectedInTime);
       } else if (response.status === 404) {
         setError('User not found');
-      setLoading(false)
-
         setUserData(null);
       } else {
         setError('Error fetching user data');
-      setLoading(false)
-
         setUserData(null);
       }
     } catch (err) {
       console.log(err);
       setError('Server error');
       setUserData(null);
-      setLoading(false)
-
+    } finally {
+      setLoading(false);
     }
   };
 
-  const updateGatepassIssue = async (rollNo, outTime, inTime, token) => {
+  const updateGatepassIssue = async (rollNo, outTime, inTime) => {
     try {
       const currentDateTime = new Date();
       const expectedDateTime = new Date(outTime);
-      const expectedInTime=new Date(inTime);
+      const expectedInDateTime = new Date(inTime);
       
       if(expectedDateTime < currentDateTime){
         setError('Invalid Expected out time');
         return;
       }
 
-      if(expectedInTime < expectedDateTime){
+      if(expectedInDateTime < expectedDateTime){
         setError('In time cannot be less than out Time');
         return;
       }
 
-
       const timeDifference = (expectedDateTime - currentDateTime);
       const hoursDifference = timeDifference / (1000 * 60 * 60);
 
-      if (hoursDifference > 48 ) {
+      if (hoursDifference > 48) {
         setError('You cannot issue a pink pass more than 48 hours in advance.');
         return;
       }
 
       const response = await axios.post('http://82.29.162.24:3300/update-gatepass-issue', {
         roll_no: rollNo,
-        expected_out_time: new Date(outTime),
-        expected_in_time: new Date(inTime),
-        token: token
+        expected_out_time: expectedDateTime,
+        expected_in_time: expectedInDateTime
       });
 
       if (response.data.success) {
-        await handleSendQRCode(rollNo, token);
+        await handleSendGatepassEmail(rollNo);
       }
     } catch (err) {
       console.error(err);
@@ -128,27 +96,14 @@ const AdminPass = () => {
       return;
     }
 
-    if (expectedOutTime.trim() === '') {
-      setError('Please enter a valid Expected Out Time.');
-      return;
-    }
-    if (expectedInTime.trim() === '') {
-      setError('Please enter a valid Expected In Time.');
-      return;
-    }
-
     try {
       setLoading(true);
       const response = await axios.post('http://localhost:3301/run-jar-verify');
       const data = response.data;
 
       if (data?.studentId) {
-        // Generate token in frontend
-        const newToken = generateToken();
-        setToken(newToken);
-        
         setFingerprintData(data);
-        await updateGatepassIssue(data.studentId, expectedOutTime, expectedInTime, newToken);
+        await updateGatepassIssue(data.studentId, expectedOutTime, expectedInTime);
       } else {
         setError('No user found');
       }
@@ -160,23 +115,22 @@ const AdminPass = () => {
     }
   };
 
-  const handleSendQRCode = async (studentID, token) => {
+  const handleSendGatepassEmail = async (studentID) => {
     try {
-      const response = await axios.post('http://82.29.162.24:3300/send-qr-code', {
-        studentID,
-        token
+      const response = await axios.post('http://82.29.162.24:3300/send-gatepass-email', {
+        studentID
       });
 
       if (response.data.success) {
-        enqueueSnackbar('QR code sent successfully!', { 
+        enqueueSnackbar('Gatepass details sent to student email!', { 
           variant: 'success',
           anchorOrigin: { vertical: 'top', horizontal: 'center' }
         });
       } else {
-        throw new Error(response.data.message || 'Failed to send QR code');
+        throw new Error(response.data.message || 'Failed to send gatepass details');
       }
     } catch (err) {
-      console.error('Error sending QR:', err);
+      console.error('Error sending email:', err);
       enqueueSnackbar(err.message, { 
         variant: 'error',
         anchorOrigin: { vertical: 'top', horizontal: 'center' }
@@ -250,7 +204,7 @@ const AdminPass = () => {
             margin: '10px auto',
             maxWidth: '400px',
           }}
->{error}</p>}
+      >{error}</p>}
 
       {(!error) && (userData || fingerprintData) && (
         <div className="mt-8">
@@ -273,8 +227,8 @@ const AdminPass = () => {
               <div><strong>Hostel Name:</strong> {(userData || fingerprintData).hostelblock}</div>
               <div><strong>Room No:</strong> {(userData || fingerprintData).roomno}</div>
               <div><strong>Parent Mobile No:</strong> {(userData || fingerprintData).parentno}</div>
-              <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
-              <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
+              <div><strong>Expected Out Time:</strong> {new Date(expectedOutTime).toLocaleString()}</div>
+              <div><strong>Expected In Time:</strong> {new Date(expectedInTime).toLocaleString()}</div>
             </div>
           </div>
         </div>

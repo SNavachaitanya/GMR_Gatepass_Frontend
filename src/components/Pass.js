@@ -1,66 +1,52 @@
-import React, { useState,useEffect} from 'react';
-import './styles/Pass.css';
+import React, { useState } from 'react';
+import './styles/Pass.css'; // Ensure you import the CSS file for styling
+import jsPDF from 'jspdf';
 import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
 
 const Pass = () => {
-  const [qrData, setQrData] = useState('');
+  const [rollNo, setRollNo] = useState('');
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error1, setError1] = useState('');
+ 
+ 
+  const [fingerprintData, setFingerprintData] = useState(null);
 
-  const handleVerify = async () => {
-    setError('');
-    setUserData(null);
-    setLoading(true);
-
-    if (!qrData.trim()) {
-      setError('Please scan a valid QR code');
-      setLoading(false);
+  // Function to verify and fetch full data for Pink Pass
+  const handleVerifyPinkPass = async () => {
+    setFingerprintData(null);
+    setError1(null);
+    setError(null)
+    if (rollNo.trim() === '') {
+      setError('Please enter a valid Roll Number.');
       return;
     }
 
     try {
-      // Parse QR code data (should be JSON string with studentID and token)
-      let parsedData;
-      try {
-        parsedData = JSON.parse(qrData);
-        if (!parsedData.studentID || !parsedData.token) {
-          throw new Error('Invalid QR code format');
-        }
-      } catch (e) {
-        throw new Error('Invalid QR code format');
+      const response = await fetch(`http://82.29.162.24:3300/verify-roll/${rollNo}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUserData(data);
+        
+        setError(''); // Clear error
+
+        // After fetching user data, update the gatepass table
+        await updateGatepass(rollNo,data.parentno);
+        
+      } else if (response.status === 404) {
+        setError('User not found');
+        setUserData(null);
+      } else {
+        setError('Error fetching user data');
+        setUserData(null);
       }
-
-      const response = await axios.post('http://82.29.162.24:3300/update-gatepass', {
-        qr_data: parsedData
-      });
-
-      if (response.data.student) {
-        setUserData(response.data.student);
-      }
-
-      enqueueSnackbar(response.data.message, { 
-        variant: response.data.success ? 'success' : 'error',
-        anchorOrigin: { vertical: 'top', horizontal: 'center' }
-      });
-
-      if (response.data.success && response.data.student?.parentno) {
-        await sendSMS(response.data.student.parentno);
-      }
-
     } catch (err) {
-      console.error('Error:', err);
-      setError(err.response?.data?.message || err.message || 'Error processing QR code');
-      // enqueueSnackbar(err.message, { 
-      //   variant: 'error',
-      //   anchorOrigin: { vertical: 'top', horizontal: 'center' }
-      // });
-    } finally {
-      setLoading(false);
+      console.log(err);
+      setError('Server error');
+      setUserData(null);
     }
   };
-
   const sendSMS = async ( message) => {
     try {
         const response = await axios.post('http://82.29.162.24:3300/send-sms-pink', {
@@ -79,36 +65,83 @@ const Pass = () => {
     }
 };
 
-useEffect(() => {
-  console.log("Scanned QR Data:", qrData);
-  if (qrData.trim() !== '') {
-    handleVerify();
-  }
-}, [qrData]);
+  // Function to update gate pass with current date and time
+  const updateGatepass = async (rollNo,parentno) => {
+    setError(null);
+    try {
+      const response = await fetch(`http://82.29.162.24:3300/update-gatepass`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ roll_no: rollNo }),
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.message);
+        console.error('Error updating gate pass:', data.message);
+      } else {
+        sendSMS(parentno);
+        console.log('Gate pass updated successfully.');
+
+        setError("");
+        // Send a WhatsApp message to the parent
+        // await sendWhatsAppMessage(parentWhatsAppNumber, 'The MSG SENT successfully.');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Server error occurred while updating the gate pass.');
+    }
+  };
+ 
+  
+   // Function to update gate pass with current date and time
+   
+  
+ 
+  const handleVerifyFingerprint = async () => {
+    setUserData(null);
+    setError(null)
+    try {
+        const response = await axios.post('http://localhost:3301/run-jar-verify');
+        const data = response.data;
+
+        // Assuming data is the student object now
+        if (data && Object.keys(data).length > 0) {
+            setFingerprintData(data); // Set the entire student data
+            await updateGatepass(data.studentId,data.parentno); // Use data.studentId
+        } else {
+            alert("No user found.");
+        }
+    } catch (error) {
+        console.error('Error running JAR:', error);
+        // alert('Error occurred while adding fingerprint.');
+    }
+};
 
   return (
     <div className="p-5">
-      <h1 className="text-center text-2xl font-bold">PinkPass Checkout</h1>
+      <h1 className="text-center text-2xl font-bold">PinkPass</h1>
+      {/* <p className="text-center">Welcome to the Gate Pass Generation system.</p> */}
       
-      <div className="flex flex-col items-center mb-5">
-        <input 
-          type="text" 
-          value={qrData} 
-          onChange={(e) => setQrData(e.target.value)} 
-          placeholder="Scan QR Code" 
-          className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto mb-4 block mobile-padding"
-          autoFocus
-        />
-        {/* <button 
-          className="bg-blue-600 text-white font-bold py-2 px-6 rounded shadow-md hover:bg-blue-700 transition duration-200"
-          onClick={handleVerify}
-          disabled={loading}
-        >
-          {loading ? 'Processing...' : 'Verify QR Code'}
-        </button> */}
+      <div className="button-container text-center mb-5">
+        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 hidden-mobile" onClick={handleVerifyFingerprint}>
+          Verify Fingerprint
+        </button>
+        <button className="bg-gray-800 text-white font-bold py-2 px-4 rounded shadow-md hover:bg-gray-600 transition duration-200 ml-2" onClick={handleVerifyPinkPass}>
+          Verify Roll Number
+        </button>
       </div>
 
-      {error && <p style={{
+      <input 
+        type="text" 
+        value={rollNo} 
+        onChange={(e) => setRollNo(e.target.value)} 
+        placeholder="Enter Roll Number" 
+        className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto mb-4 block"
+      />
+       {error && <p style={{
             color: 'white',
             textAlign: 'center',
             backgroundColor: 'red',
@@ -122,27 +155,129 @@ useEffect(() => {
           }}
 >{error}</p>}
 
-      {userData && (
-        <div className="bg-white shadow-md p-6 rounded-lg mx-auto max-w-3xl">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {userData.imageUrl && (
-              <img 
-                src={userData.imageUrl} 
-                alt="Student" 
-                className="h-32 w-32 object-cover rounded" 
-              />
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
-              <div><strong>Name:</strong> {userData.sname}</div>
-              <div><strong>Roll No:</strong> {userData.studentId}</div>
-              <div><strong>Branch:</strong> {userData.branch}</div>
-              <div><strong>Year:</strong> {userData.syear}</div>
-              <div><strong>Checkout Time:</strong> {new Date().toLocaleTimeString()}</div>
-              <div><strong>Date:</strong> {new Date().toLocaleDateString()}</div>
-            </div>
-          </div>
+      {(!error) && fingerprintData && (
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+         
+          <div className="flex items-center bg-white shadow-md p-6 rounded-lg mx-auto" style={{ maxWidth: '800px' }}>
+                        {/* Image Section */}
+                        {fingerprintData.imageUrl ? (
+                            <img 
+                                src={fingerprintData.imageUrl} 
+                                alt="Student" 
+                                className="h-32 w-32 object-cover rounded mr-6" 
+                            />
+                        ) : (
+                            <span>No image available</span>
+                        )}
+                        {/* Details Section */}
+                        <div className="grid grid-cols-3 gap-x-8 gap-y-4">
+                            <div><strong>Name:</strong> {fingerprintData.sname}</div>
+                            <div><strong>Roll No:</strong> {fingerprintData.studentId}</div>
+                            <div><strong>Branch:</strong> {fingerprintData.branch}</div>
+                            <div><strong>Year:</strong> {fingerprintData.syear}</div>
+                           
+                            <div><strong>Hostel Name:</strong> {fingerprintData.hostelblock}</div>
+                            <div><strong>Room No:</strong> {fingerprintData.roomno}</div>
+                            {/* <div><strong>Gatepass Count:</strong> {userData.gatepassCount}</div> */}
+                            <div><strong>Parent No:</strong> {fingerprintData.parentno}</div>
+                            
+                            <div><strong>Date:</strong> {new Date().toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })}</div>
+                            <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
+                        </div>
+                    </div>
+                  
+          <br />
+         
+          {/* <button className="bg-gray-900 text-white font-semibold py-2 px-4 rounded hover:bg-gray-700 transition duration-200 " onClick={generatePinkPassPDF1}>
+            Print Pink Pass
+          </button> */}
+          {/* <button className="bg-gray-800 text-white font-semibold py-2 px-4 rounded hover:bg-gray-700 transition duration-200 ml-2" onClick={generateOutpassPDF1}>
+            Print Outpass
+          </button> */}
         </div>
       )}
+
+      
+      
+      {(!error) && userData &&  (
+    <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        
+        
+
+
+<div className="flex items-center bg-white shadow-md p-6 rounded-lg mx-auto" style={{ maxWidth: '800px' }}>
+                        {/* Image Section */}
+                        {userData.imageUrl ? (
+                            <img 
+                                src={userData.imageUrl} 
+                                alt="Student" 
+                                className="h-32 w-32 object-cover rounded mr-6" 
+                            />
+                        ) : (
+                            <span>No image available</span>
+                        )}
+                        {/* Details Section */}
+                        <div className="grid grid-cols-3 gap-x-8 gap-y-4">
+                            <div><strong>Name:</strong> {userData.sname}</div>
+                            <div><strong>Roll No:</strong> {userData.studentId}</div>
+                            <div><strong>Branch:</strong> {userData.branch}</div>
+                            <div><strong>Year:</strong> {userData.syear}</div>
+                           
+                            <div><strong>Hostel Name:</strong> {userData.hostelblock}</div>
+                            <div><strong>Room No:</strong> {userData.roomno}</div>
+                            {/* <div><strong>Gatepass Count:</strong> {userData.gatepassCount}</div> */}
+                            <div><strong>Parent No:</strong> {userData.parentno}</div>
+                            
+                            <div><strong>Date:</strong> {new Date().toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })}</div>
+                            <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
+                        </div>
+                    </div>
+                  
+
+        <br />
+        
+        {/* Display Gatepass Count */}
+       
+
+        {/* Print Buttons */}
+        {/* <button className=" bg-gray-900 text-white font-semibold py-2 px-4 rounded hover:bg-gray-700 transition duration-200" onClick={generatePinkPassPDF}>
+            Print Pink Pass
+        </button> */}
+        {/* <button className=" bg-gray-800 text-white font-semibold py-2 ml-3 px-4 rounded hover:bg-gray-700 transition duration-200" onClick={generateOutpassPDF}>
+            Print Outpass
+        </button> */}
+    </div>
+)}
+     
+     <style jsx>{`
+        @media (max-width: 600px) {
+          .hidden-mobile {
+            display: none;
+          }
+          .mobile-padding {
+            width: calc(100% - 32px); /* Subtract left and right padding from full width */
+            margin-left: auto;
+      margin-right: auto;
+            padding-left: 20px; /* Adjust as needed */
+            padding-right: 20px; /* Adjust as needed */
+          }
+          .button-container {
+            flex-direction: column;
+          }
+          .button-container button {
+            margin-left: 0;
+            margin-top: 10px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

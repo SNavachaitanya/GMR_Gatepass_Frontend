@@ -8,13 +8,7 @@ const AdminOutpass = () => {
   const [userData, setUserData] = useState(null);
   const [fingerprintData, setFingerprintData] = useState(null);
   const [error, setError] = useState('');
-  const [token, setToken] = useState('');
   const { enqueueSnackbar } = useSnackbar();
-
-  // Function to generate random token
-  const generateToken = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
 
   const handleVerifyPinkPass = async () => {
     setFingerprintData(null);
@@ -24,17 +18,13 @@ const AdminOutpass = () => {
       return;
     }
 
-    // Generate a new token
-    const newToken = generateToken();
-    setToken(newToken);
-
     try {
       const response = await fetch(`http://82.29.162.24:3300/verify-roll-outpass/${rollNo}`);
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
         setError('');
-        await updateGatepass(rollNo, newToken);
+        await updateGatepass(rollNo);
       } else if (response.status === 404) {
         setError('User not found');
         setUserData(null);
@@ -49,21 +39,20 @@ const AdminOutpass = () => {
     }
   };
 
-  const updateGatepass = async (rollNo, token) => {
+  const updateGatepass = async (rollNo) => {
     try {
       const response = await fetch(`http://82.29.162.24:3300/update-outpass-admin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ roll_no: rollNo, token: token }),
+        body: JSON.stringify({ roll_no: rollNo }),
       });
       const data = await response.json();
       if (!response.ok) {
         setError(data.message);
       } else {
-        // enqueueSnackbar('Outpass generated successfully!', { variant: 'success' });
-        await handleSendQRCode(rollNo,token);
+        await handleSendOutpassEmail(rollNo);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -77,21 +66,14 @@ const AdminOutpass = () => {
     setError('');
     
     try {
-        // Generate token first
-        const newToken = generateToken();
-        setToken(newToken);
-
-        // Call local bridge server
-        const response = await axios.post('http://localhost:3301/run-jar-verify', {
-            token: newToken // Pass token if needed
-        });
-
+        const response = await axios.post('http://localhost:3301/run-jar-verify');
+        
         if (response.data.error) {
             throw new Error(response.data.error);
         }
 
         setFingerprintData(response.data);
-        await updateGatepass(response.data.studentId, newToken);
+        await updateGatepass(response.data.studentId);
         
     } catch (error) {
         console.error('Fingerprint error:', error);
@@ -99,29 +81,27 @@ const AdminOutpass = () => {
             variant: 'error' 
         });
     }
-};
+  };
 
-  const handleSendQRCode = async (studentID,token) => {
-    // const studentID = userData ? userData.studentId : fingerprintData?.studentId;
+  const handleSendOutpassEmail = async (studentID) => {
     if (!studentID) {
       setError('No student ID found.');
       return;
     }
 
     try {
-      const response = await axios.post(`http://82.29.162.24:3300/send-qr-code`, {
-        studentID,
-        token: token // Include the token in the request
+      const response = await axios.post(`http://82.29.162.24:3300/send-outpass-email`, {
+        studentID
       });
 
       if (response.data.success) {
-        enqueueSnackbar('QR code sent successfully!', { variant: 'success' });
+        enqueueSnackbar('Outpass details sent to student email!', { variant: 'success' });
       } else {
-        enqueueSnackbar('Failed to send QR code.', { variant: 'error' });
+        enqueueSnackbar('Failed to send outpass details.', { variant: 'error' });
       }
     } catch (err) {
-      console.error('Error sending QR code:', err);
-      enqueueSnackbar('Error sending QR code.', { variant: 'error' });
+      console.error('Error sending outpass details:', err);
+      enqueueSnackbar('Error sending outpass details.', { variant: 'error' });
     }
   };
 
@@ -152,7 +132,7 @@ const AdminOutpass = () => {
         className="border rounded w-full md:w-1/3 px-3 py-2 mx-auto mb-4 block mobile-padding"
       />
 
-{error && <p style={{
+      {error && <p style={{
             color: 'white',
             textAlign: 'center',
             backgroundColor: 'red',
@@ -164,7 +144,7 @@ const AdminOutpass = () => {
             margin: '10px auto',
             maxWidth: '400px',
           }}
->{error}</p>}
+      >{error}</p>}
 
       {(!error) && (userData || fingerprintData) && (
         <div className="mt-8">
@@ -190,15 +170,6 @@ const AdminOutpass = () => {
               <div><strong>Date:</strong> {new Date().toLocaleDateString('en-GB')}</div>
               <div><strong>Time:</strong> {new Date().toLocaleTimeString()}</div>
             </div>
-          </div>
-          
-          <div className="text-center mt-4">
-            {/* <button
-              className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
-              onClick={handleSendQRCode}
-            >
-              Send QR Code
-            </button> */}
           </div>
         </div>
       )}
