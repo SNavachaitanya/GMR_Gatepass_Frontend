@@ -37,7 +37,7 @@ const Checkinout = () => {
         throw new Error(response.data.error);
       }
   
-      setMessage('Student check-in successful!');
+      setMessage('Outpass check-in successful!');
       enqueueSnackbar('Check-in recorded successfully!', { 
         variant: 'success',
         anchorOrigin: { vertical: 'top', horizontal: 'center' }
@@ -55,59 +55,36 @@ const Checkinout = () => {
       });
     }
   };
-
+  
+  // Roll number check-in (unchanged except for error handling)
   const handleCheckIn = async () => {
     setMessage('');
     setError('');
-    if (rollNo.trim() === '') {
-      setError('Please enter a valid Roll Number.');
-      // enqueueSnackbar('Please enter a valid Roll Number.', { 
-      //   variant: 'warning', 
-      //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
-      //   autoHideDuration: 3000 
-      // });
+    
+    if (!rollNo.trim()) {
+      setError('Please enter a valid Roll Number');
       return;
     }
-
+  
     try {
-      const response = await fetch(`http://82.29.162.24:3300/checkin-out/${rollNo}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // sendSMS(data.parentno);
-        setMessage('Check-in successful!');
-        // enqueueSnackbar('Check-in successful!', { 
-        //   variant: 'success', 
-        //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
-        //   autoHideDuration: 3000 
-        // });
-        setError('');
-      } else if (response.status === 404) {
-        setError('No pending checkout record found for the roll number.');
-        // enqueueSnackbar('No pending checkout record found for the roll number.', { 
-        //   variant: 'error', 
-        //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
-        //   autoHideDuration: 3000 
-        // });
-      } else {
-        setError('Check-in failed.');
-        // enqueueSnackbar('Check-in failed.', { 
-        //   variant: 'error', 
-        //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
-        //   autoHideDuration: 3000 
-        // });
+      const response = await axios.patch(`http://82.29.162.24:3300/checkin-out/${encodeURIComponent(rollNo.trim())}`);
+      
+      if (response.data.error) {
+        throw new Error(response.data.error);
       }
-    } catch (err) {
-      console.error('Error during check-in:', err);
-      setError('Server error occurred during check-in.');
-      // enqueueSnackbar('Server error occurred during check-in.', { 
-      //   variant: 'error', 
-      //   anchorOrigin: { vertical: 'top', horizontal: 'center' },
-      //   autoHideDuration: 3000 
-      // });
+  
+      setMessage('Check-in successful via roll number');
+      enqueueSnackbar('Check-in recorded successfully!', {
+        variant: 'success',
+        anchorOrigin: { vertical: 'top', horizontal: 'center' }
+      });
+  
+    } catch (error) {
+      console.error('Check-in error:', error);
+      const errorMsg = error.response?.data?.error || error.message;
+      setError(errorMsg.includes('No pending')
+        ? "No pending outpass found for this roll number"
+        : "Check-in failed. Please try again.");
     }
   };
 
