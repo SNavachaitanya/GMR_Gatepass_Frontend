@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './styles/Home.css';
-import { FaUniversity } from 'react-icons/fa'; // Importing an icon from react-icons
 
 const Home = () => {
   // Image array with source links
@@ -11,7 +10,7 @@ const Home = () => {
     "https://gmrit.edu.in/images/facilities/Facilities-2-GHostel1.jpg",
     "https://gmrit.edu.in/images/facilities/Facilities-2-GHostel2.jpg"
   ];
-  
+
   const initialColors = ['#0000FF', '#FF0000', '#FFFF00']; // Blue, Red, Yellow
   const [colors, setColors] = useState(initialColors);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -31,9 +30,9 @@ const Home = () => {
     const colorInterval = setInterval(() => {
       setColors((prevColors) => {
         return [
-          prevColors[2], // Move R to G
-          prevColors[0], // Move G to M
-          prevColors[1], // Move M to R
+          prevColors[2], 
+          prevColors[0], 
+          prevColors[1],
         ];
       });
     }, 1000);
@@ -62,15 +61,29 @@ const Home = () => {
         {/* Welcome Box */}
         <div className="welcome absolute inset-0 flex items-center justify-center z-20">
           <div className="bg-opacity-60 p-4 rounded text-center">
-            <h1 className="text-3xl font-bold">
-              <FaUniversity className="inline-block mr-2" size={40} color="#00c6ff" />
+            <h1 className="text-white text-3xl font-bold" style={{ fontSize: "35px", marginBottom: "10px" }}>
               Welcome to <span style={{ color: colors[0], opacity: 0.8 }}>G</span>
               <span style={{ color: colors[1], opacity: 0.8 }}>M</span>
               <span style={{ color: colors[2], opacity: 0.8 }}>R</span> Institute of Technology
             </h1>
-            <h2 className="text-3xl font-bold">GatePass Generation</h2>
+            <h2 className="text-white text-3xl font-bold">GatePass Generation</h2>
           </div>
         </div>
+
+        {/* Floating Download Button */}
+        <a 
+          href="/GMR Gatepass.apk" 
+          download
+          className="fixed bottom-20 right-5 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition transform hover:scale-110 z-50"
+          title="Download APK"
+        >
+          {/* Download icon (SVG) */}
+          <img 
+              src="/download-icon.png"  // We'll put your uploaded image inside public folder
+              alt="Download APK" 
+              className="w-8 h-8"
+          />
+        </a>
       </div>
 
       {/* Footer */}
