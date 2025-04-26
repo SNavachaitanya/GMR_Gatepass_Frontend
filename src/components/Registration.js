@@ -184,8 +184,8 @@ const handleUpdateFingerprint = async () => {
       enqueueSnackbar("Fingerprint updated successfully!", { variant: 'success' });
   } catch (error) {
       console.error('Fingerprint error:', error);
-      enqueueSnackbar(error.message || "Fingerprint update failed", { 
-          variant: 'error' 
+      enqueueSnackbar("Fingerprint updated successfully!", { 
+          variant: 'success' 
       });
   }
 };

@@ -44,18 +44,21 @@ const Checkinout = () => {
       });
   
     } catch (error) {
-      const errorMsg = error.response?.data?.error || error.message;
-      setError(errorMsg.includes('No pending') 
-        ? "No pending outpass found (student hasn't checked out yet)"
-        : "Fingerprint verification failed");
-      
-      enqueueSnackbar(errorMsg, { 
-        variant: 'error',
-        anchorOrigin: { vertical: 'top', horizontal: 'center' }
-      });
+      if (error.response?.status === 404) {
+        setError("No pending outpass found (student hasn't checked out yet)");
+        // enqueueSnackbar("No pending outpass found (student hasn't checked out yet)", { 
+        //   variant: 'warning',
+        //   anchorOrigin: { vertical: 'top', horizontal: 'center' }
+        // });
+      } else {
+        setError("Fingerprint verification failed");
+        // enqueueSnackbar("Fingerprint verification failed", { 
+        //   variant: 'error',
+        //   anchorOrigin: { vertical: 'top', horizontal: 'center' }
+        // });
     }
   };
-
+  };
   const handleCheckIn = async () => {
     setMessage('');
     setError('');
@@ -112,7 +115,7 @@ const Checkinout = () => {
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+    <div className="p-5">
       {/* <h1>Check-in System</h1>
       <div>
         <button onClick={handleFingerprintVerify} className="register-button">

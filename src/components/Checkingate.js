@@ -110,7 +110,7 @@ const Checkingate = () => {
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+    <div className="p-5">
       {/* <h1>Check-in System</h1>
       <div>
         <button onClick={handleFingerprintVerify} className="register-button">

@@ -173,6 +173,17 @@ const AdminOutpass = () => {
           </div>
         </div>
       )}
+      <style jsx>{`
+  @media (max-width: 600px) {
+    .hidden-mobile {
+      display: none;
+    }
+    .disable-mobile {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+  }
+`}</style>
     </div>
   );
 };
